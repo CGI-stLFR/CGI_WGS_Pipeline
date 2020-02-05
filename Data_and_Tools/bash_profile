@@ -1,0 +1,20 @@
+export PATH=$HOME/bin:/usr/lib64:$PATH
+export PATH=$PATH:/opt/cgi-mummer-4.0.0beta/bin
+export PATH=$PATH:/home/eanderson/edlib-1.2.4/build/bin
+export PATH=$PATH:/home/eanderson/.local/bin
+export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3
+export VIRTUALENVWRAPPER_VIRTUALENV=/home/eanderson/.local/bin/virtualenv
+export WORKON_HOME=/home/eanderson/Virtual_Envs
+
+PATH="/home/eanderson/perl5/bin${PATH:+:${PATH}}"; export PATH;
+PERL5LIB="/home/eanderson/perl5/lib/perl5${PERL5LIB:+:${PERL5LIB}}"; export PERL5LIB;
+PERL_LOCAL_LIB_ROOT="/home/eanderson/perl5${PERL_LOCAL_LIB_ROOT:+:${PERL_LOCAL_LIB_ROOT}}"; export PERL_LOCAL_LIB_ROOT;
+PERL_MB_OPT="--install_base \"/home/eanderson/perl5\""; export PERL_MB_OPT;
+PERL_MM_OPT="INSTALL_BASE=/home/eanderson/perl5"; export PERL_MM_OPT;
+
+
+LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/research/rv-02/InternalProjects/PerfectHumanGenome/lib4gcc484/lib:/research/rv-02/InternalProjects/PerfectHumanGenome/lib4gcc484/lib64:/research/rv-02/InternalProjects/PerfectHumanGenome/libraries/boost_1_57_0/stage/lib:/research/rv-02/InternalProjects/PerfectHumanGenome/libraries/tbb:/research/rv-02/InternalProjects/PerfectHumanGenome/libraries/tbb/build/linux_intel64_gcc_cc4.4.7_libc2.12_kernel2.6.32_release:/usr/lib64"; 
+export LD_LIBRARY_PATH
+
+umask 0002
+export SENTIEON_LICENSE=sentieon-license-server.completegenomics.com:8990
