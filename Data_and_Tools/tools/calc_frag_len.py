@@ -208,6 +208,16 @@ def write_out_tsv_and_summary(test_barcodes, dirname, reads_per_bc_bins):
     reads_twenties_fifty = reads_per_bc_bins[6]
     reads_fifty_hundo = reads_per_bc_bins[7]
     reads_hundo_plus = reads_per_bc_bins[8]
+    bcs_one = reads_per_bc_bins[9]
+    bcs_two = reads_per_bc_bins[10]
+    bcs_three = reads_per_bc_bins[11]
+    bcs_four = reads_per_bc_bins[12]
+    bcs_five_nine = reads_per_bc_bins[13]
+    bcs_ten_twenties = reads_per_bc_bins[14]
+    bcs_twenties_fifty = reads_per_bc_bins[15]
+    bcs_fifty_hundo = reads_per_bc_bins[16]
+    bcs_hundo_plus = reads_per_bc_bins[17]
+    bcs_total = reads_per_bc_bins[18]
     out_stats = dirname + "/frag_and_bc_summary.txt"
     with open(out_stats, "w") as frag_stats:
         print(f"Barcode Count:\t{barcode_count}\n"
@@ -225,7 +235,17 @@ def write_out_tsv_and_summary(test_barcodes, dirname, reads_per_bc_bins):
               f"Reads/BC (10, 25]:\t{reads_ten_twenties}\n"
               f"Reads/BC (25, 50]:\t{reads_twenties_fifty}\n"
               f"Reads/BC (50, 100]:\t{reads_fifty_hundo}\n"
-              f"Reads/BC (100+):\t{reads_hundo_plus}",
+              f"Reads/BC (100+):\t{reads_hundo_plus}\n"
+              f"Reads/BC (1):\t{bcs_one}\n"
+              f"Reads/BC (2):\t{bcs_two}\n"
+              f"Reads/BC (3):\t{bcs_three}\n"
+              f"Reads/BC (4):\t{bcs_four}\n"
+              f"Reads/BC (5, 10]:\t{bcs_five_nine}\n"
+              f"Reads/BC (10, 25]:\t{bcs_ten_twenties}\n"
+              f"Reads/BC (25, 50]:\t{bcs_twenties_fifty}\n"
+              f"Reads/BC (50, 100]:\t{bcs_fifty_hundo}\n"
+              f"Reads/BC (100+):\t{bcs_hundo_plus}\n"
+              f"Barcodes Mapped:\t{bcs_total}",
               file = frag_stats)
     
     test_barcodes.to_csv(dirname + "/frag_and_bc_dataframe.tsv", sep='\t', index=False)
@@ -261,6 +281,16 @@ def write_out_barcode_summary(test_barcodes, dirname):
     reads_per_bc_bins.append(barcode_summary[(barcode_summary['Reads'] >= 25) & (barcode_summary['Reads'] < 50)].Reads.sum())
     reads_per_bc_bins.append(barcode_summary[(barcode_summary['Reads'] >= 50) & (barcode_summary['Reads'] < 100)].Reads.sum())
     reads_per_bc_bins.append(barcode_summary[barcode_summary['Reads'] >= 100].Reads.sum())
+    reads_per_bc_bins.append(len(barcode_summary[barcode_summary['Reads'] == 1].index))
+    reads_per_bc_bins.append(len(barcode_summary[barcode_summary['Reads'] == 2].index))
+    reads_per_bc_bins.append(len(barcode_summary[barcode_summary['Reads'] == 3].index))
+    reads_per_bc_bins.append(len(barcode_summary[barcode_summary['Reads'] == 4].index))
+    reads_per_bc_bins.append(len(barcode_summary[(barcode_summary['Reads'] >= 5) & (barcode_summary['Reads'] < 10)].index))
+    reads_per_bc_bins.append(len(barcode_summary[(barcode_summary['Reads'] >= 10) & (barcode_summary['Reads'] < 25)].index))
+    reads_per_bc_bins.append(len(barcode_summary[(barcode_summary['Reads'] >= 25) & (barcode_summary['Reads'] < 50)].index))
+    reads_per_bc_bins.append(len(barcode_summary[(barcode_summary['Reads'] >= 50) & (barcode_summary['Reads'] < 100)].index))
+    reads_per_bc_bins.append(len(barcode_summary[barcode_summary['Reads'] >= 100].index))
+    reads_per_bc_bins.append(len(barcode_summary.index))
 
     frag_per_bc = sns.distplot(barcode_summary['Frags'], kde=False, rug=True)
     plt.savefig(dirname + "/frags_per_bc.pdf")
