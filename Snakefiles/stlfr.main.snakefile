@@ -12,6 +12,8 @@ rule map_reads:
         sen_license = config['params']['sentieon_license'],
         readgroup = r'@RG\tID:{0}\tSM:{0}\tPL:{1}'.format(config['samples']['id'],
                                                           config['params']['platform'])
+    benchmark:
+        "Benchamrks/main.map_reads.txt"
     shell:
         "{params.sen_install}/bin/bwa mem -M -R '{params.readgroup}' -C "
             "-t {threads} {input.ref} {input.fqs} 2>Align/aln.err | tee {output.sam} | "
@@ -27,6 +29,8 @@ rule locus_collector:
         config['threads']['bwa']
     params:
         sen_install = config['params']['sentieon_install']
+    benchmark:
+        "Benchamrks/main.locus_collectord.{id}.txt"
     shell:
         "{params.sen_install}/bin/sentieon driver  -t {threads} "
             "-i {input} "
@@ -45,6 +49,8 @@ rule mark_dups:
         config['threads']['bwa']
     params:
         sen_install = config['params']['sentieon_install']
+    benchmark:
+        "Benchamrks/main.mark_dups.{id}.txt"
     shell:
         "{params.sen_install}/bin/sentieon driver  -t {threads} "
             "-i {input.bam} "
@@ -60,6 +66,8 @@ rule mark_dups_txt:
         "Align/{id}_dedup_metrics2.txt"
     params:
         toolsdir = config['params']['toolsdir']
+    benchmark:
+        "Benchamrks/main.mark_dups_txt.{id}.txt"
     shell:
         "perl {params.toolsdir}/tools/mark_dups_txt.pl {input} {output}"
 
@@ -75,6 +83,8 @@ rule run_longhap:
     params:
         toolsdir = config['params']['toolsdir'],
         samp = config['samples']['id']
+    benchmark:
+        "Benchamrks/main.run_longhap.txt"
     shell:
         "mkdir -p Make_Vcf/step4_longhap; "
         "cd Make_Vcf/step4_longhap; "
@@ -89,6 +99,8 @@ rule eval_longhap:
     params:
         toolsdir = config['params']['toolsdir'],
         samp = config['samples']['id']
+    benchmark:
+        "Benchamrks/main.eval_longhap.txt"
     shell:
         "cd Make_Vcf/step4_longhap; "
         "sh {params.toolsdir}/tools/eval_longhap.sh {params.samp}"
@@ -122,6 +134,8 @@ rule run_hapcut_bam:
     params:
         toolsdir = config['params']['toolsdir'],
         samp = config['samples']['id']
+    benchmark:
+        "Benchamrks/main.run_hapcut_bam.{id}.txt"
     shell:
         "mkdir -p Make_Vcf/step3_hapcut; "
         "cd Make_Vcf/step3_hapcut; "
@@ -139,6 +153,8 @@ rule run_hapcut_vcf:
     params:
         toolsdir = config['params']['toolsdir'],
         samp = config['samples']['id']
+    benchmark:
+        "Benchamrks/main.run_hapcut_vcf.{id}.txt"
     shell:
         "mkdir -p Make_Vcf/step3_hapcut; "
         "cd Make_Vcf/step3_hapcut; "
@@ -152,6 +168,8 @@ rule eval_hapcut:
     params:
         toolsdir = config['params']['toolsdir'],
         samp = config['samples']['id']
+    benchmark:
+        "Benchamrks/main.eval_hapcut.txt"
     shell:
         "mkdir -p Make_Vcf/step3_hapcut/step4_compare_with_refphasing; "
         "cd Make_Vcf/step3_hapcut; "

@@ -79,6 +79,8 @@ rule calculate_metrics:
         config['threads']['metrics']
     params:
         sen_install = config['params']['sentieon_install']
+    benchmark:
+        "Benchmarks/metrics.calculate_metrics.{id}.txt"
     shell:
         "{params.sen_install}/bin/sentieon driver "
             "-t {threads} "
@@ -101,6 +103,8 @@ rule plot_metrics:
         "Align/sentieon_metrics_{id}.pdf"
     params:
         sen_install = config['params']['sentieon_install']
+    benchmark:
+        "Benchmarks/metrics.plot_metrics.{id}.txt"
     shell:
         "{params.sen_install}/bin/sentieon plot metrics "
             "-o {output} "
@@ -119,6 +123,8 @@ rule duplicate_analysis:
         "Align/Duplicate_Analysis/PE_dup_reads"
     params:
         toolsdir = config['params']['toolsdir']
+    benchmark:
+        "Benchmarks/metrics.duplicate_analysis.txt"
     shell:
         "samtools view {input} | "
             "perl {params.toolsdir}/tools/Duplicate_analysis.pl - Align/Duplicate_Analysis"
@@ -131,6 +137,8 @@ rule duplicate_plot:
         "Align/Duplicate_Analysis/duplicate.pdf"
     params:
         toolsdir = config['params']['toolsdir']
+    benchmark:
+        "Benchmarks/metrics.duplicate_plot.txt"
     shell:
         "{params.toolsdir}/tools/duplicate_statistics_new.R {input} {output}"
 
@@ -140,6 +148,8 @@ rule run_flagstat:
         "Align/{}.sort.rmdup.bam".format(config['samples']['id'])
     output:
         "Align/flagstat_metric.txt"
+    benchmark:
+        "Benchmarks/metrics.run_flagstat.txt"
     shell:
         "samtools flagstat {input} > {output}"
 
@@ -151,6 +161,8 @@ rule picard_align_metrics:
         "Align/picard_align_metrics.txt"
     params:
         toolsdir = config['params']['toolsdir']
+    benchmark:
+        "Benchmarks/metrics.picard_align_metrics.txt"
     shell:
         "perl {params.toolsdir}/tools/picard.pl {input} "
         "{params.toolsdir}/tools/samtools-0.1.18/samtools > {output}"
@@ -164,6 +176,8 @@ rule coverage_depth:
     params:
         toolsdir = config['params']['toolsdir'],
         ref = config['params']['ref_fa']
+    benchmark:
+        "Benchmarks/metrics.coverage_depth.txt"
     shell:
         "perl {params.toolsdir}/tools/depthV2.0.pl -l $({params.toolsdir}/tools/fasta_non_gapped_bases.py {params.ref}) {input} Align > {output}"
 
@@ -175,6 +189,8 @@ rule coverage_plot_sam:
         "Align/Coverage_Plot/Sam_File/{id}_aa.sam"
     params:
         id = config['samples']['id']
+    benchmark:
+        "Benchmarks/metrics.coverage_plot_sam.{id}.txt"
     shell:
         "mkdir -p Align/Coverage_Plot/Sam_File; cd Align/Coverage_Plot/Sam_File; "
         "split -l 1000000 --additional-suffix=.sam ../../../{input} {params.id}_"
@@ -191,6 +207,8 @@ rule moar_gc_plots:
     params:
         python = config['params']['gcbias_python'],
         toolsdir = config['params']['toolsdir']
+    benchmark:
+        "Benchmarks/metrics.moar_gc_plots.txt"
     shell:
         "{params.python} {params.toolsdir}/tools/GC_bias_20181217.py "
             "{input.sam} "
@@ -213,6 +231,8 @@ rule generate_summary_report:
         samp = config['samples']['id'],
         read_length = config['params']['read_len'],
         min_frag = config['calc_frag']['min_frag']
+    benchmark:
+        "Benchmarks/metrics.generate_summary_report.txt"
     shell:
         "python {params.toolsdir}/tools/summary_report_v3.py {params.samp} {params.read_length} {params.min_frag}| "
         "tee > {output}"

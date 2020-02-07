@@ -8,6 +8,8 @@ rule remove_sam_duplicates:
         "Align/{id}.aln.sam"
     params:
         readlen = config['params']['read_len']
+    benchmark:
+        "Benchmarks/remove_sam_analysis.remove_sam_duplicates.{id}.txt"
     run:
         shell("""
               perl -e '$readlen={params.readlen}; $a="";$b="";$id="";$n=0;
@@ -26,6 +28,8 @@ rule generate_chrom_ids:
         CHROM_IDS
     params:
         toolsdir = config['params']['toolsdir']
+    benchmark:
+        "Benchmarks/remove_sam_analysis.generate_chrom_ids.txt"
     shell:
         "perl {params.toolsdir}/tools/Fa_Stat.pl {input} {output}"
 
@@ -39,6 +43,8 @@ rule lfr_length_stats:
     params:
         toolsdir = config['params']['toolsdir'],
         readlen = config['params']['read_len']
+    benchmark:
+        "Benchmarks/remove_sam_analysis.lfr_length_stats.txt"
     shell:
         "perl {params.toolsdir}/tools/LFR_Length_Stat_new5.pl "
             "{input.chroms} "
@@ -54,6 +60,8 @@ rule overlap_reads_plot:
         "Align/Distance_Between_Reads/overlap_reads.plot"
     params:
         toolsdir = config['params']['toolsdir']
+    benchmark:
+        "Benchmarks/remove_sam_analysis.overlap_reads_plot.txt"
     shell:
         "perl {params.toolsdir}/tools/overlap_reads.pl {input} {output}"
 
@@ -65,6 +73,8 @@ rule overlap_hist:
         "Align/Distance_Between_Reads/overlap_reads.plot.R"
     params:
         toolsdir = config['params']['toolsdir']
+    benchmark:
+        "Benchmarks/remove_sam_analysis.overlap_hist.txt"
     shell:
         "perl {params.toolsdir}/tools/Histogram_plot.pl "
             "{input} 0 1 1000 {output}"
@@ -75,6 +85,8 @@ rule reads_on_ref_count:
         "Align/Distance_Between_Reads/reads_on_ref.pos"
     output:
         "Align/Distance_Between_Reads/reads_on_ref.pos.num"
+    benchmark:
+        "Benchmarks/remove_sam_analysis.reads_on_ref_count.txt"
     shell:
         "wc -l {input} > {output}"
 
@@ -87,6 +99,8 @@ rule overlap_reads_plot_2:
         "Align/Distance_Between_Reads/overlap_reads.plot2.R"
     params:
         readlen = config['params']['read_len']
+    benchmark:
+        "Benchmarks/remove_sam_analysis.overlap_reads_plot_2.txt"
     run:
         shell("""
               perl -e '$readlen={params.readlen}; open IN1,"{input.count}";
@@ -107,6 +121,8 @@ rule plot_read_overlap:
         "Align/Distance_Between_Reads/distance_between_reads.pdf"
     params:
         toolsdir = config['params']['toolsdir']
+    benchmark:
+        "Benchmarks/remove_sam_analysis.plot_read_overlap.txt"
     shell:
         "{params.toolsdir}/tools/R-3.2.1/bin/Rscript "
             "{params.toolsdir}/tools/Distance_between_reads.R "
@@ -122,6 +138,8 @@ rule mate_pair_distance:
     params:
         toolsdir = config['params']['toolsdir'],
         readlen = config['params']['read_len']
+    benchmark:
+        "Benchmarks/remove_sam_analysis.mate_pair_distance.txt"
     shell:
         "perl {params.toolsdir}/tools/mate_pairs_distance.pl "
             "{input.chroms} "
@@ -137,6 +155,8 @@ rule mate_pair_hist:
         "Align/Distance_Between_Reads/mate_pairs_distance.plot.R"
     params:
         toolsdir = config['params']['toolsdir']
+    benchmark:
+        "Benchmarks/remove_sam_analysis.mate_pair_hist.txt"
     shell:
         "perl {params.toolsdir}/tools/Histogram_plot.pl "
             "{input} 0 1000 300000000 {output}"
@@ -147,6 +167,8 @@ rule mate_pair_count:
         "Align/Distance_Between_Reads/mate_pairs_distance.plot"
     output:
         "Align/Distance_Between_Reads/mate_pairs_distance.num"
+    benchmark:
+        "Benchmarks/remove_sam_analysis.mate_pair_count.txt"
     shell:
         "wc -l {input} > {output}"
 
@@ -159,6 +181,8 @@ rule mate_pair_plot_2:
         "Align/Distance_Between_Reads/mate_pairs_distance.plot2.R"
     params:
         readlen = config['params']['read_len']
+    benchmark:
+        "Benchmarks/remove_sam_analysis.mate_pair_plot_2.txt"
     run:
         shell("""
               perl -e '$readlen={params.readlen}; open IN1,"{input.count}";
@@ -179,6 +203,8 @@ rule plot_mate_pairs:
         "Align/Distance_Between_Reads/mate_pairs_distance.pdf"
     params:
         toolsdir = config['params']['toolsdir']
+    benchmark:
+        "Benchmarks/remove_sam_analysis.plot_mate_pairs.txt"
     shell:
         "{params.toolsdir}/tools/R-3.2.1/bin/Rscript "
             "{params.toolsdir}/tools/Mate_pairs_distance.R  "

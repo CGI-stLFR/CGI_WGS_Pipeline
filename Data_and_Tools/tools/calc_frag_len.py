@@ -16,6 +16,7 @@ Options:
   -n <int> --threads <int>     Number of threads to run in parallel [default: 1].
   --chroms                     Comma seperated list of chromosomes to use [default: all].
   --includedups                Include reads marked as duplicates.
+  --writeouttsvs               Write out large, detailed TSVs of various data manipulations. 
   --outdir                     Specify output directory [default ./Calc_Frag_Length]
 """
 
@@ -38,19 +39,20 @@ def main():
     min_reads = args.minreads
     read_len = args.readlen
     include_dups = args.includedups
+    write_out_tsv = args.writeouttsvs
     n_threads = args.threads
     chroms = args.chroms
     dirname = args.outdir
     
     print(f"Calculating Fragment Lengths for Chroms {chroms}", file=sys.stderr)
     ray.shutdown()
-    ray.init(num_cpus=n_threads, object_store_memory=100*1024*1024*1024)
+    ray.init(num_cpus=n_threads, object_store_memory=100*1024*1024*1024, memory=100*1024*1024*1024)
     print(ray.available_resources(), file=sys.stderr)
     barcode_collection = get_reads(bam_path, split_dist, include_dups, 
                                    chroms, read_len)
-    reads_per_bc_bins = write_out_barcode_summary(barcode_collection, dirname)
+    reads_per_bc_bins = write_out_barcode_summary(barcode_collection, dirname, write_out_tsv)
     barcode_collection = manipulate_df_gaps(barcode_collection, min_frag, min_reads)
-    write_out_tsv_and_summary(barcode_collection, dirname, reads_per_bc_bins)
+    write_out_tsv_and_summary(barcode_collection, dirname, reads_per_bc_bins, write_out_tsv)
     
     
 
@@ -71,6 +73,8 @@ def get_arguments():
                         help="Comma seperated list of chromosomes to use [default: all]")
     parser.add_argument("--includedups", action="store_true",
                         help="Include reads marked as duplicates.")
+    parser.add_argument("--writeouttsvs", action="store_true",
+                        help="Write out large, detailed TSVs of various data manipulations.")
     parser.add_argument("--outdir", type=str, default="Calc_Frag_Length",
                         help="Specify output directory [default ./Calc_Frag_Length]")
     args = parser.parse_args()
@@ -190,7 +194,7 @@ def manipulate_df_prelim(barcode_collection, read_len):
     return test_barcodes
 
     
-def write_out_tsv_and_summary(test_barcodes, dirname, reads_per_bc_bins):
+def write_out_tsv_and_summary(test_barcodes, dirname, reads_per_bc_bins, write_out_tsv):
     print(f"Writing out summary files to {dirname}", file=sys.stderr)
     barcode_count  = test_barcodes['Barcode'].nunique()
     fragment_count = test_barcodes.shape[0]
@@ -236,19 +240,20 @@ def write_out_tsv_and_summary(test_barcodes, dirname, reads_per_bc_bins):
               f"Reads/BC (25, 50]:\t{reads_twenties_fifty}\n"
               f"Reads/BC (50, 100]:\t{reads_fifty_hundo}\n"
               f"Reads/BC (100+):\t{reads_hundo_plus}\n"
-              f"Reads/BC (1):\t{bcs_one}\n"
-              f"Reads/BC (2):\t{bcs_two}\n"
-              f"Reads/BC (3):\t{bcs_three}\n"
-              f"Reads/BC (4):\t{bcs_four}\n"
-              f"Reads/BC (5, 10]:\t{bcs_five_nine}\n"
-              f"Reads/BC (10, 25]:\t{bcs_ten_twenties}\n"
-              f"Reads/BC (25, 50]:\t{bcs_twenties_fifty}\n"
-              f"Reads/BC (50, 100]:\t{bcs_fifty_hundo}\n"
-              f"Reads/BC (100+):\t{bcs_hundo_plus}\n"
+              f"Total BCs (1):\t{bcs_one}\n"
+              f"Total BCs (2):\t{bcs_two}\n"
+              f"Total BCs (3):\t{bcs_three}\n"
+              f"Total BCs (4):\t{bcs_four}\n"
+              f"Total BCs (5, 10]:\t{bcs_five_nine}\n"
+              f"Total BCs (10, 25]:\t{bcs_ten_twenties}\n"
+              f"Total BCs (25, 50]:\t{bcs_twenties_fifty}\n"
+              f"Total BCs (50, 100]:\t{bcs_fifty_hundo}\n"
+              f"Total BCs (100+):\t{bcs_hundo_plus}\n"
               f"Barcodes Mapped:\t{bcs_total}",
               file = frag_stats)
     
-    test_barcodes.to_csv(dirname + "/frag_and_bc_dataframe.tsv", sep='\t', index=False)
+    if write_out_tsv:
+        test_barcodes.to_csv(dirname + "/frag_and_bc_dataframe.tsv", sep='\t', index=False)
     frag_plot = sns.distplot(test_barcodes['Frag_Length'])
     plt.savefig(dirname + "/frag_length_distribution.pdf")
     plt.clf()
@@ -257,7 +262,7 @@ def write_out_tsv_and_summary(test_barcodes, dirname, reads_per_bc_bins):
     plt.clf()
     
     
-def write_out_barcode_summary(test_barcodes, dirname):
+def write_out_barcode_summary(test_barcodes, dirname, write_out_tsv):
     try:
         # Create target Directory
         os.mkdir(dirname)
@@ -295,7 +300,8 @@ def write_out_barcode_summary(test_barcodes, dirname):
     frag_per_bc = sns.distplot(barcode_summary['Frags'], kde=False, rug=True)
     plt.savefig(dirname + "/frags_per_bc.pdf")
     plt.clf()
-    barcode_summary.to_csv(dirname + "/frags_reads_per_bc.tsv", sep='\t', index=False)
+    if write_out_tsv:
+        barcode_summary.to_csv(dirname + "/frags_reads_per_bc.tsv", sep='\t', index=False)
 
     return(reads_per_bc_bins)
     

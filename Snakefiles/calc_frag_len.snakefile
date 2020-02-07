@@ -7,6 +7,8 @@ rule remove_duplicates:
         "Align/{id}.sort.rmdup.bam"
     output:
         "Calc_Frag_Length/step1_removedup_rm000/{id}.sort.removedup_rm000.sam"
+    benchmark:
+        "Benchmarks/calc_frag_len.remove_duplicates.{id}.txt"
     shell:
         "samtools view -h -F 0x400 {input} | "
         "awk -F $'\t' '($1!~/#0_0_0$/){{print}}' > {output}"
@@ -29,7 +31,10 @@ rule calc_frag_len:
         chroms = ','.join(CHROMS),
         toolsdir = config['params']['toolsdir'],
         include_dups = config['calc_frag']['include_dups']
-    threads: config['threads']['calc_frag']
+    threads: 
+        config['threads']['calc_frag']
+    benchmark:
+        "Benchmarks/calc_frag_len.calc_frag_len.txt"
     run:
         if params.include_dups:
             shell("source /home/eanderson/.virtualenvs/General3/bin/activate ; "
