@@ -16,6 +16,10 @@ if not config['samples']['chroms']:
 else:
     CHROMS = config['samples']['chroms']
 
+def run_all_input(wildcards):
+    sample_id = config['samples']['id']
+    benchmarking = config['modules']['benchmarking']
+    var_calling = config['modules']['var_call']
 
 rule run_all:
     input:
