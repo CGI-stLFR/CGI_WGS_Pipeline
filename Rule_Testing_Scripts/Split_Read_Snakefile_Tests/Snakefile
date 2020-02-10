@@ -1,3 +1,4 @@
+configfile: "config.yaml"
 include: "/research/rv-02/home/eanderson/CGI_WGS_Pipeline/Snakefiles/splitreads.snakefile"
 
 rule run_all:

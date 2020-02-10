@@ -1,3 +1,4 @@
 **/data
 Data_and_Tools/tools/*/
 **/._*
+**/.snakemake

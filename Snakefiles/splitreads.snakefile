@@ -28,6 +28,7 @@ def determine_barcode_list(n_samples):
     
     barcode_file = config['params']['toolsdir'] + config['params']['barcode']
     barcode_rc_file = config['params']['toolsdir'] + config['params']['barcode_RC']
+    fastq_path = "data/read_2.fq.gz"
     
     def get_barcodes(barcodes_file):
         print(f"reading in {barcodes_file}", file=sys.stderr)
@@ -80,10 +81,10 @@ def determine_barcode_list(n_samples):
 
     print(f"Barcodes: {bcs_found}\nRC_Barcodes: {rc_bcs_found}\n",file=sys.stderr)
     if bcs_found > rc_bcs_found:
-	print("Barcode_list: {}".format(config['params']['barcode']))
+        print("Barcode_list: {}".format(config['params']['barcode']), file=sys.stderr)
         return config['params']['barcode']
     elif rc_bcs_found > bcs_found:
-	print("Barcode_list: {}".format(config['params']['barcode_RC']))
+        print("Barcode_list: {}".format(config['params']['barcode_RC']), file=sys.stderr)
         return config['params']['barcode_RC']
     else:
         if n_samples > 40000000:
@@ -102,10 +103,8 @@ rule split_reads:
         len = config['params']['read_len'],
         toolsdir = config['params']['toolsdir']
     run:
-	params.barcode = determine_barcode_list(400000)
-        shell("""
-              perl {params.toolsdir}/tools/split_barcode_PEXXX_42_reads.pl \
-              {params.toolsdir}{params.barcode} \
-              {input} {params.len} data/split_read \
-              2> data/split_stat_read.err
-              """)
+        params.barcode = determine_barcode_list(400000)
+        shell("perl {params.toolsdir}/tools/split_barcode_PEXXX_42_reads.pl "
+            "{params.toolsdir}{params.barcode} "
+            "{input} {params.len} data/split_read "
+            "2> data/split_stat_read.err")
