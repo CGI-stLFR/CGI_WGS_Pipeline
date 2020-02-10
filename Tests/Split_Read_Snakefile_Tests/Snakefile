@@ -1,0 +1,6 @@
+include: "/research/rv-02/home/eanderson/CGI_WGS_Pipeline/Snakefiles/splitreads.snakefile"
+
+rule run_all:
+    input:
+        expand("data/split_read.{i}.fq.gz", i=range(1,3))
+
