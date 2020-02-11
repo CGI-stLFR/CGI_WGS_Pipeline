@@ -17,30 +17,37 @@ else:
     CHROMS = config['samples']['chroms']
 
 def run_all_input(wildcards):
-    sample_id = config['samples']['id']
-    benchmarking = config['modules']['benchmarking']
-    var_calling = config['modules']['var_call']
+    run_all_files = ["summary_report.txt",
+                     "Align/GC_Table.csv",
+                     "Align/GC_Distribution.png",
+                     "Align/Normalized_GC_Coverage.png",
+                     "Align/{}_dedup_metrics2.txt".format(config['samples']['id']),
+                     "Align/flagstat_metric.txt",
+                     "Align/sentieon_metrics_{}.pdf".format(config['samples']['id'])]
+
+    if config['modules']['variant_calling']: 
+        run_all_files.append("Make_Vcf/step1_haplotyper/{}_sentieon.vcf".format(config['samples']['id']))
+    
+    if config['modules']['benchmarking']:
+        run_all_files.append("Make_Vcf/step2_benchmarking/snp_compare/summary.txt")
+        run_all_files.append("Make_Vcf/step2_benchmarking/indel_compare/summary.txt")
+
+    if config['modules']['mate_pair_analysis']:
+        run_all_files.append("Align/Distance_Between_Reads/mate_pairs_distance.pdf")
+
+    if config['modules']['read_overlap_analysis']:
+        run_all_files.append("Align/Distance_Between_Reads/distance_between_reads.pdf")
+   
+    if config['modules']['duplicate_plot']:
+        run_all_files.append("Benchmarks/metrics.duplicate_plot.txt")
+
+    return run_all_files
+
 
 rule run_all:
     input:
-        "Align/{}_dedup_metrics2.txt".format(config['samples']['id']),
-        "Align/sentieon_metrics_{}.pdf".format(config['samples']['id']),
-        "Align/flagstat_metric.txt",
-        "Align/picard_align_metrics.txt",
-        "Align/Distance_Between_Reads/distance_between_reads.pdf",
-        "Align/Duplicate_Analysis/duplicate.pdf",
-        "Align/Distance_Between_Reads/mate_pairs_distance.pdf",
-        "Align/coverage_depth.txt",
-        "Calc_Frag_Length/frag_and_bc_summary.txt",
-        "Make_Vcf/step1_haplotyper/{}_sentieon.vcf".format(config['samples']['id']),
-        "Make_Vcf/step2_benchmarking/snp_compare/summary.txt",
-        "Make_Vcf/step2_benchmarking/indel_compare/summary.txt",
-        "Align/Normalized_GC_Coverage.png",
-        "Make_Vcf/step3_hapcut/step3_run_hapcut2_10xpipeline/s3_hapcut_output/hapblock_{}_chr1".format(config['samples']['id']),
-        "Make_Vcf/step3_hapcut/step4_compare_with_refphasing/hapcut_comparison_with_giab.txt",
-        "Make_Vcf/step4_longhap/longhap_results.txt",
-        "summary_report.txt"
-
+        run_all_input
+        
 
 include: "/research/rv-02/home/eanderson/CGI_WGS_Pipeline/Snakefiles/calc_frag_len.snakefile"
 include: "/research/rv-02/home/eanderson/CGI_WGS_Pipeline/Snakefiles/remove_sam_analysis.snakefile"
