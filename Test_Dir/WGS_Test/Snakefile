@@ -25,6 +25,16 @@ def run_all_input(wildcards):
                      "Align/flagstat_metric.txt",
                      "Align/sentieon_metrics_{}.pdf".format(config['samples']['id'])]
 
+    calc_frag_file = ["Calc_Frag_Length/frag_length_distribution.pdf",
+                      "Calc_Frag_Length/n_read_distribution.pdf",
+                      "Calc_Frag_Length/frag_and_bc_summary.txt",
+                      "Calc_Frag_Length/frags_per_bc.pdf"]
+
+    for split_dist in config['calc_frag']['split_dist']:
+        for outfile in calc_frag_file:
+            parts = outfile.split("/")
+            run_all_files.append(parts[0] + "_" + str(split_dist) + "/" + parts[1])
+
     if config['modules']['variant_calling']: 
         run_all_files.append("Make_Vcf/step1_haplotyper/{}_sentieon.vcf".format(config['samples']['id']))
     
@@ -41,6 +51,7 @@ def run_all_input(wildcards):
     if config['modules']['duplicate_plot']:
         run_all_files.append("Benchmarks/metrics.duplicate_plot.txt")
 
+    print(run_all_files)
     return run_all_files
 
 

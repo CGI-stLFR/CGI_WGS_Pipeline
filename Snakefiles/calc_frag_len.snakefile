@@ -1,7 +1,3 @@
-
-min_frag = config['calc_frag']['min_frag']
-split_dist = config['calc_frag']['split_dist']
-
 rule remove_duplicates:
     input:
         "Align/{id}.sort.rmdup.bam"
@@ -14,44 +10,51 @@ rule remove_duplicates:
         "awk -F $'\t' '($1!~/#0_0_0$/){{print}}' > {output}"
 
 
+def get_chroms(wildcards):
+    if len(CHROMS) > 1:
+        return ",".join(CHROMS)
+    else:
+        assert len(CHROMS) == 1
+        return CHROMS
+
+
 rule calc_frag_len:
     input:
         "Align/{}.sort.rmdup.bam".format(config['samples']['id'])
     output:
-        "Calc_Frag_Length/frag_length_distribution.pdf",
-        "Calc_Frag_Length/n_read_distribution.pdf",
-        "Calc_Frag_Length/frag_and_bc_summary.txt",
-        "Calc_Frag_Length/frag_and_bc_dataframe.tsv",
-        "Calc_Frag_Length/frags_reads_per_bc.tsv",
-        "Calc_Frag_Length/frags_per_bc.pdf"
+        "Calc_Frag_Length_{split}/frag_length_distribution.pdf",
+        "Calc_Frag_Length_{split}/n_read_distribution.pdf",
+        "Calc_Frag_Length_{split}/frag_and_bc_summary.txt",
+        "Calc_Frag_Length_{split}/frags_per_bc.pdf"
     params:
         min_frag = config['calc_frag']['min_frag'],
-        split_dist = config['calc_frag']['split_dist'],
         read_len = config['params']['read_len'],
-        chroms = ','.join(CHROMS),
+        chroms = get_chroms,
         toolsdir = config['params']['toolsdir'],
         include_dups = config['calc_frag']['include_dups']
     threads: 
         config['threads']['calc_frag']
     benchmark:
-        "Benchmarks/calc_frag_len.calc_frag_len.txt"
+        "Benchmarks/calc_frag_len.calc_frag_len_{split}.txt"
     run:
         if params.include_dups:
             shell("source /home/eanderson/.virtualenvs/General3/bin/activate ; "
                   "{params.toolsdir}/tools/calc_frag_len.py "
                       "--minfrag {params.min_frag} "
-                      "--splitdist {params.split_dist} "
+                      "--splitdist {wildcards.split} "
                       "--readlen {params.read_len} "
                       "--threads {threads} "
                       "--chroms {params.chroms} "
+                      "--outdir Calc_Frag_Length_{wildcards.split} "
                       "--includedups "
                       "{input}")
         else:
             shell("source /home/eanderson/.virtualenvs/General3/bin/activate ; "
                   "{params.toolsdir}/tools/calc_frag_len.py "
                       "--minfrag {params.min_frag} "
-                      "--splitdist {params.split_dist} "
+                      "--splitdist {wildcards.split} "
                       "--readlen {params.read_len} "
                       "--threads {threads} "
                       "--chroms {params.chroms} "
+                      "--outdir Calc_Frag_Length_{wildcards.split} "
                       "{input}")
