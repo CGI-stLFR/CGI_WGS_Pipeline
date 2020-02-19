@@ -198,7 +198,7 @@ rule coverage_plot_sam:
 
 rule moar_gc_plots:
     input:
-        sam = "Calc_Frag_Length/step1_removedup_rm000/{}.sort.removedup_rm000.sam".format(config['samples']['id']),
+        sam = "Align/{}.sort.removedup_rm000.sam".format(config['samples']['id']),
         ref = "{}/data/Human_GC_Bins.csv".format(config['params']['toolsdir'])
     output:
         "Align/GC_Table.csv",

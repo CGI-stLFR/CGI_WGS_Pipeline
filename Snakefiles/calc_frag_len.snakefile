@@ -2,7 +2,7 @@ rule remove_duplicates:
     input:
         "Align/{id}.sort.rmdup.bam"
     output:
-        "Calc_Frag_Length/step1_removedup_rm000/{id}.sort.removedup_rm000.sam"
+        "Align/{id}.sort.removedup_rm000.sam"
     benchmark:
         "Benchmarks/calc_frag_len.remove_duplicates.{id}.txt"
     shell:
