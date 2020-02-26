@@ -11,6 +11,7 @@ modules:
     mate_pair_analysis: False
     read_overlap_analysis: False
     duplicate_plot: False
+    umi_analysis: False
 params:
     ref_fa: "/research/rv-02/home/qmao/DBs/hg38_fa_from_NCBI/GCA_000001405.15_GRCh38_no_alt_analysis_set.fa"
     platform: "BGI-seq"

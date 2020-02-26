@@ -31,30 +31,29 @@ rule calc_frag_len:
         read_len = config['params']['read_len'],
         chroms = get_chroms,
         toolsdir = config['params']['toolsdir'],
-        include_dups = config['calc_frag']['include_dups']
+        include_dups = config['calc_frag']['include_dups'],
+        umi_analysis = config['modules']['umi_analysis']
     threads: 
         config['threads']['calc_frag']
     benchmark:
         "Benchmarks/calc_frag_len.calc_frag_len_{split}.txt"
     run:
+        command = ["source /home/eanderson/.virtualenvs/General3/bin/activate ;",
+                   "{params.toolsdir}/tools/calc_frag_len.py",
+                   "--minfrag {params.min_frag}",
+                   "--splitdist {wildcards.split}",
+                   "--readlen {params.read_len}",
+                   "--threads {threads}",
+                   "--chroms {params.chroms}",
+                   "--outdir Calc_Frag_Length_{wildcards.split}"]
+
         if params.include_dups:
-            shell("source /home/eanderson/.virtualenvs/General3/bin/activate ; "
-                  "{params.toolsdir}/tools/calc_frag_len.py "
-                      "--minfrag {params.min_frag} "
-                      "--splitdist {wildcards.split} "
-                      "--readlen {params.read_len} "
-                      "--threads {threads} "
-                      "--chroms {params.chroms} "
-                      "--outdir Calc_Frag_Length_{wildcards.split} "
-                      "--includedups "
-                      "{input}")
-        else:
-            shell("source /home/eanderson/.virtualenvs/General3/bin/activate ; "
-                  "{params.toolsdir}/tools/calc_frag_len.py "
-                      "--minfrag {params.min_frag} "
-                      "--splitdist {wildcards.split} "
-                      "--readlen {params.read_len} "
-                      "--threads {threads} "
-                      "--chroms {params.chroms} "
-                      "--outdir Calc_Frag_Length_{wildcards.split} "
-                      "{input}")
+            command.append("--includedups")
+
+        if params.umi_analysis:
+            command.append("--writeouttsvs")
+
+        command.append("{input}")
+    
+        shell(" ".join(command))
+    
