@@ -91,7 +91,8 @@ def determine_barcode_list(n_samples):
             print("Can't determine correct barcode file for sample", file=sys.stderr)
             sys.exit(1)
         else:
-            determine_barcode_list(n_samples * 2)
+            return determine_barcode_list(n_samples * 2)
+            
 
 
 rule split_reads:
