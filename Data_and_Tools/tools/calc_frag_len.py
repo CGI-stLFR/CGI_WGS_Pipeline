@@ -152,7 +152,7 @@ def p_processing_chroms(bam_path, include_dups, split_dist,
         if include_dups:
             read_flag = (read.flag & 0x900 == 0)
         else:
-            read_flag = (read.flag & 0x1300 == 0)
+            read_flag = (read.flag & 0xD00 == 0)
         if bc != "0_0_0" and read.mapping_quality > 30 and read_flag:
             chrom = bamfile.get_reference_name(read.reference_id)
             bc_tag = check_bc_tag(bc, chrom)

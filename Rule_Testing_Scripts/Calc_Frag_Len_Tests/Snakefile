@@ -1,0 +1,9 @@
+configfile: "config.yaml"
+
+CHROMS = [config['samples']['chroms']]
+include: "/research/rv-02/home/eanderson/CGI_WGS_Pipeline/Snakefiles/calc_frag_len.snakefile"
+
+rule run_all:
+    input:
+        expand("Calc_Frag_Length_{split}/frag_and_bc_summary.txt", split=[50000,300000])
+

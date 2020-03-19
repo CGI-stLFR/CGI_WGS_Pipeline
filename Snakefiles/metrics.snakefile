@@ -198,7 +198,7 @@ rule coverage_plot_sam:
 
 rule moar_gc_plots:
     input:
-        sam = "Calc_Frag_Length/step1_removedup_rm000/{}.sort.removedup_rm000.sam".format(config['samples']['id']),
+        sam = "Align/{}.sort.removedup_rm000.sam".format(config['samples']['id']),
         ref = "{}/data/Human_GC_Bins.csv".format(config['params']['toolsdir'])
     output:
         "Align/GC_Table.csv",
@@ -216,14 +216,32 @@ rule moar_gc_plots:
             "-o Align/"
 
 
+def summary_report_input(wildcards):
+    summary_report_files = ["Align/coverage_depth.txt",
+                            "Align/picard_align_metrics.txt",
+                            "Align/sentieon_is_{}_metric.txt".format(config['samples']['id'])]
+
+    calc_frag_file = ["Calc_Frag_Length/frag_length_distribution.pdf",
+                      "Calc_Frag_Length/n_read_distribution.pdf",
+                      "Calc_Frag_Length/frag_and_bc_summary.txt",
+                      "Calc_Frag_Length/frags_per_bc.pdf"]
+
+
+    for split_dist in config['calc_frag']['split_dist']:
+        for outfile in calc_frag_file:
+            parts = outfile.split("/")
+            summary_report_files.append(parts[0] + "_" + str(split_dist) + "/" + parts[1])
+
+    if config['modules']['phasing']:
+        summary_report_files.append("Make_Vcf/step4_longhap/longhap_results.txt")
+        summary_report_files.append("Make_Vcf/step3_hapcut/step4_compare_with_refphasing/hapcut_comparison_with_giab.txt") 
+
+    return summary_report_files
+
+
 rule generate_summary_report:
     input:
-        "Align/sentieon_is_{}_metric.txt".format(config['samples']['id']),
-        "Align/coverage_depth.txt",
-        "Align/picard_align_metrics.txt",
-        "Make_Vcf/step4_longhap/longhap_results.txt",
-        "Make_Vcf/step3_hapcut/step4_compare_with_refphasing/hapcut_comparison_with_giab.txt",
-        "Calc_Frag_Length/frag_and_bc_summary.txt"
+        summary_report_input
     output:
         "summary_report.txt"
     params:

@@ -1,0 +1,13 @@
+samples:
+    id: "hg001"
+    chroms: "chr1"
+params:
+    read_len: 100
+    toolsdir: "/research/rv-02/home/eanderson/CGI_WGS_Pipeline/Data_and_Tools"
+calc_frag:
+    min_frag: 750
+    split_dist: [50000, 300000]
+    include_dups: True
+threads:
+    calc_frag: 1
+                    
