@@ -157,10 +157,10 @@ def p_processing_chroms(bam_path, include_dups, split_dist,
             chrom = bamfile.get_reference_name(read.reference_id)
             bc_tag = check_bc_tag(bc, chrom)
             if bc_tag not in barcode_coll:
-                barcode_coll[bc_tag] = [bc, chrom, [read.reference_start]]
+                barcode_coll[bc_tag] = [bc, chrom, [read.reference_start], [read.query_name]]
             else:
                 barcode_coll[bc_tag][2].append(read.reference_start)
-    
+                barcode_coll[bc_tag][3].append(read.query_name)
     barcode_df = manipulate_df_prelim(barcode_coll, read_len)
     return barcode_df
 
@@ -185,7 +185,7 @@ def manipulate_df_gaps(test_barcodes, min_frag, min_reads):
 
 
 def manipulate_df_prelim(barcode_collection, read_len):
-    test_barcodes = pd.DataFrame.from_dict(barcode_collection, orient="index", columns=['Barcode', 'Chrom', 'Positions'])
+    test_barcodes = pd.DataFrame.from_dict(barcode_collection, orient="index", columns=['Barcode', 'Chrom', 'Positions', 'ReadID'])
     test_barcodes['Positions'] = test_barcodes['Positions'].apply(set).apply(list).apply(sorted)
     test_barcodes['N_Reads'] = test_barcodes['Positions'].apply(len)
     test_barcodes['Min_Pos'] = test_barcodes['Positions'].apply(min)
