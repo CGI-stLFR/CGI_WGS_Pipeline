@@ -46,7 +46,7 @@ def main():
     
     print(f"Calculating Fragment Lengths for Chroms {chroms}", file=sys.stderr)
     ray.shutdown()
-    ray.init(num_cpus=n_threads, object_store_memory=100*1024*1024*1024, memory=100*1024*1024*1024)
+    ray.init(num_cpus=n_threads, object_store_memory=200*1024*1024*1024, memory=100*1024*1024*1024)
     print(ray.available_resources(), file=sys.stderr)
     barcode_collection = get_reads(bam_path, split_dist, include_dups, 
                                    chroms, read_len)

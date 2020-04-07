@@ -1,4 +1,4 @@
-set -e
+set -eo pipefail
 export laneid=$1
 if [ -z $2  ]; then
     threads=10
@@ -6,7 +6,7 @@ else
     threads=$2
 fi
 
-align_sam=../../../Calc_Frag_Length/step1_removedup_rm000/${laneid}.sort.removedup_rm000.sam
+align_sam=../../../Align/${laneid}.sort.removedup_rm000.sam
 
 
 

@@ -51,6 +51,10 @@ def run_all_input(wildcards):
     if config['modules']['duplicate_plot']:
         run_all_files.append("Benchmarks/metrics.duplicate_plot.txt")
 
+    if config['modules']['phasing']:
+        run_all_files.extend(["Make_Vcf/step4_longhap/longhap_results.txt",
+                              "Make_Vcf/step3_hapcut/step4_compare_with_refphasing/hapcut_comparison_with_giab.txt"])
+
     print(run_all_files)
     return run_all_files
 

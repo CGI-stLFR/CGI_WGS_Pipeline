@@ -13,13 +13,22 @@ rule run_dnascope:
         dbsnp = config['params']['dbsnp_path']
     benchmark:
         "Benchmarks/make_vcf.run_dnascope.{id}.txt"
-    shell:
-        "{params.sen_install}/bin/sentieon driver -r {input.ref}  -t {threads} "
-            "-i {input.bam} "
-            "--algo DNAscope "
-            "-d {params.dbsnp} "
-            "--model {params.sen_model} "            
-            "{output}"
+    run:
+        command = ["{params.sen_install}/bin/sentieon", "driver", 
+                   "-r", "{input.ref}", "-t", "{threads}",
+                   "-i", "{input.bam}", "--algo", "DNAscope"]
+        if params.dbsnp:
+            command.extend(["-d", "{params.dbsnp}"])
+        command.extend(["--model", "{params.sen_model}", "{output}"])
+        shell(" ".join(command))
+
+#    shell:
+#        "{params.sen_install}/bin/sentieon driver -r {input.ref}  -t {threads} "
+#            "-i {input.bam} "
+#            "--algo DNAscope "
+#            "-d {params.dbsnp} "
+#            "--model {params.sen_model} "            
+#            "{output}"
 
 
 rule run_dnamodel_apply:

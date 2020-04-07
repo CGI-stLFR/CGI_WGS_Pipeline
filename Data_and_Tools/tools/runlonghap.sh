@@ -1,4 +1,5 @@
 #!/bin/bash
+set -eo pipefail
 script_name=`basename -s .sh "$0"`
 
 laneid=$1

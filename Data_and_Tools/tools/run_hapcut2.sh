@@ -1,4 +1,4 @@
-set -e
+set -eo pipefail
 export laneid=$1
 if [ -z $2  ]; then
     threads=10

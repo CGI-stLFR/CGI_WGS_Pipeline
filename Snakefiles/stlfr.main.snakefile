@@ -30,7 +30,7 @@ rule locus_collector:
     params:
         sen_install = config['params']['sentieon_install']
     benchmark:
-        "Benchmarks/main.locus_collectord.{id}.txt"
+        "Benchmarks/main.locus_collector.{id}.txt"
     shell:
         "{params.sen_install}/bin/sentieon driver  -t {threads} "
             "-i {input} "
@@ -74,7 +74,7 @@ rule mark_dups_txt:
 
 rule run_longhap:
     input:
-        bam = "Make_Vcf/step3_hapcut/step1_modify_bam/{}_sort.rmdup.addBX.bam".format(config['samples']['id']),
+        bam = "Align/{}.sort.removedup_rm000.sam".format(config['samples']['id']),
         vcf = "Make_Vcf/step1_haplotyper/{}_sentieon_pass_vars.vcf".format(config['samples']['id'])
     output:
         "Make_Vcf/step4_longhap/LibOutDir/chr1.vcf"
@@ -126,7 +126,7 @@ rule eval_longhap:
 
 rule run_hapcut_bam:
     input:
-        "Calc_Frag_Length/step1_removedup_rm000/{id}.sort.removedup_rm000.sam",
+        "Align/{id}.sort.removedup_rm000.sam",
     output:
         "Make_Vcf/step3_hapcut/step1_modify_bam/{id}_sort.rmdup.addBX.bam"
     threads:
