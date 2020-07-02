@@ -25,15 +25,16 @@ def run_all_input(wildcards):
                      "Align/flagstat_metric.txt",
                      "Align/sentieon_metrics_{}.pdf".format(config['samples']['id'])]
 
-    calc_frag_file = ["Calc_Frag_Length/frag_length_distribution.pdf",
-                      "Calc_Frag_Length/n_read_distribution.pdf",
-                      "Calc_Frag_Length/frag_and_bc_summary.txt",
-                      "Calc_Frag_Length/frags_per_bc.pdf"]
+    if config['modules']['stLFR']:
+        calc_frag_file = ["Calc_Frag_Length/frag_length_distribution.pdf",
+                          "Calc_Frag_Length/n_read_distribution.pdf",
+                          "Calc_Frag_Length/frag_and_bc_summary.txt",
+                          "Calc_Frag_Length/frags_per_bc.pdf"]
 
-    for split_dist in config['calc_frag']['split_dist']:
-        for outfile in calc_frag_file:
-            parts = outfile.split("/")
-            run_all_files.append(parts[0] + "_" + str(split_dist) + "/" + parts[1])
+        for split_dist in config['calc_frag']['split_dist']:
+            for outfile in calc_frag_file:
+                parts = outfile.split("/")
+                run_all_files.append(parts[0] + "_" + str(split_dist) + "/" + parts[1])
 
     if config['modules']['variant_calling']: 
         run_all_files.append("Make_Vcf/step1_haplotyper/{}_sentieon.vcf".format(config['samples']['id']))
@@ -52,8 +53,14 @@ def run_all_input(wildcards):
         run_all_files.append("Benchmarks/metrics.duplicate_plot.txt")
 
     if config['modules']['phasing']:
+        for CHR in CHROMS:
+            run_all_files.append("Make_Vcf/step3_hapcut/step3_run_hapcut2_10xpipeline/s3_hapcut_output/{}_hapblock_{}".format(config['samples']['id'], CHR))
+            run_all_files.append("Make_Vcf/step4_longhap/LibOutDir/{}.vcf".format(CHR))
+
         run_all_files.extend(["Make_Vcf/step4_longhap/longhap_results.txt",
-                              "Make_Vcf/step3_hapcut/step4_compare_with_refphasing/hapcut_comparison_with_giab.txt"])
+                              "Make_Vcf/step3_hapcut/step4_compare_with_refphasing/hapcut_eval.txt",
+                              "Make_Vcf/step3_hapcut/step4_compare_with_refphasing/{}_hapcut.phased.vcf".format(config['samples']['id']),
+                              "Make_Vcf/step4_longhap/{}_sentieon_pass_vars.vcf".format(config['samples']['id'])])
 
     print(run_all_files)
     return run_all_files
@@ -70,6 +77,7 @@ include: "/research/rv-02/home/eanderson/CGI_WGS_Pipeline/Snakefiles/make_vcf.sn
 include: "/research/rv-02/home/eanderson/CGI_WGS_Pipeline/Snakefiles/metrics.snakefile"
 include: "/research/rv-02/home/eanderson/CGI_WGS_Pipeline/Snakefiles/stlfr.main.snakefile"
 include: "/research/rv-02/home/eanderson/CGI_WGS_Pipeline/Snakefiles/splitreads.snakefile"
+include: "/research/rv-02/home/eanderson/CGI_WGS_Pipeline/Snakefiles/phasing.snakefile"
 
 shell.prefix('source /research/rv-02/home/eanderson/CGI_WGS_Pipeline/Data_and_Tools/bash_profile; ')
 

@@ -17,4 +17,4 @@ LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/research/rv-02/InternalProjects/PerfectHuma
 export LD_LIBRARY_PATH
 
 umask 0002
-export SENTIEON_LICENSE=sentieon-license-server.completegenomics.com:8990
+export SENTIEON_LICENSE=sentieon-license-server.completegenomics.com:8991

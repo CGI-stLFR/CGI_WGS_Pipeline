@@ -1,6 +1,34 @@
+def get_fastqs_one(wildcards):
+    from pathlib import Path
+    fq_path = Path(config['samples']['fq_path'])
+    lanes = config['samples']['lanes']
+    fq_files = []
+    for lane in lanes:
+        loc_path = fq_path / lane
+        for fp in loc_path.iterdir():
+            if fp.is_file and str(fp).endswith("_1.fq.gz"):
+                print(fp)
+                fq_files.append(str(fp))
+    return fq_files            
+
+
+def get_fastqs_two(wildcards):
+    from pathlib import Path
+    fq_path = Path(config['samples']['fq_path'])
+    lanes = config['samples']['lanes']
+    fq_files = []
+    for lane in lanes:
+        loc_path = fq_path / lane
+        for fp in loc_path.iterdir():
+            if fp.is_file and str(fp).endswith("_2.fq.gz"):
+                print(fp)
+                fq_files.append(str(fp))
+    return fq_files            
+
+
 rule cat_read_one:
     input:
-        expand("{fq}/{lanes}/{lanes}_read_1.fq.gz", fq=config['samples']['fq_path'], lanes=config['samples']['lanes'])
+        get_fastqs_one
     output:
         "data/read_1.fq.gz"
     run:
@@ -12,7 +40,7 @@ rule cat_read_one:
 
 rule cat_read_two:
     input:
-        expand("{fq}/{lanes}/{lanes}_read_2.fq.gz", fq=config['samples']['fq_path'], lanes=config['samples']['lanes'])
+        get_fastqs_two
     output:
         "data/read_2.fq.gz"
     run:
@@ -94,6 +122,27 @@ def determine_barcode_list(n_samples):
             return determine_barcode_list(n_samples * 2)
             
 
+def get_read_diff(read1, read2):
+    import sys
+    import gzip
+    with gzip.open(read1, "r") as r1, gzip.open(read2, "r") as r2:
+        r1.readline()
+        r2.readline()
+        seq1 = r1.readline().strip()
+        seq2 = r2.readline().strip()
+        if len(seq1) != config['params']['read_len']:
+            print(f"interpreted read length ({len(seq1)}) does not match supplied read length ({config['params']['read_len']})", file=sys.stderr)
+            sys.exit(1)
+        if len(seq2) - len(seq1) == 42:
+            print(f"42BP barcode detected", file=sys.stderr)
+            return True
+        elif len(seq2) - len(seq1) == 30:
+            print(f"30BP barcode detected", file=sys.stderr)
+            return False
+        else:
+            print(f"Unknown barcode length detected", file=sys.stderr)
+            sys.exit(1)
+        
 
 rule split_reads:
     input:
@@ -105,7 +154,13 @@ rule split_reads:
         toolsdir = config['params']['toolsdir']
     run:
         params.barcode = determine_barcode_list(400000)
-        shell("perl {params.toolsdir}/tools/split_barcode_PEXXX_42_reads.pl "
-            "{params.toolsdir}{params.barcode} "
-            "{input} {params.len} data/split_read "
-            "2> data/split_stat_read.err")
+        if get_read_diff(input[0], input[1]):
+            shell("perl {params.toolsdir}/tools/split_barcode_PEXXX_42_reads.pl "
+                "{params.toolsdir}{params.barcode} "
+                "{input} {params.len} data/split_read "
+                "2> data/split_stat_read.err")
+        else:
+            shell("perl {params.toolsdir}/tools/split_barcode_PEXXX_30_reads.pl "
+                "{params.toolsdir}{params.barcode} "
+                "{input} {params.len} data/split_read "
+                "2> data/split_stat_read.err")

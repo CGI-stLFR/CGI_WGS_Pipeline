@@ -221,20 +221,21 @@ def summary_report_input(wildcards):
                             "Align/picard_align_metrics.txt",
                             "Align/sentieon_is_{}_metric.txt".format(config['samples']['id'])]
 
-    calc_frag_file = ["Calc_Frag_Length/frag_length_distribution.pdf",
-                      "Calc_Frag_Length/n_read_distribution.pdf",
-                      "Calc_Frag_Length/frag_and_bc_summary.txt",
-                      "Calc_Frag_Length/frags_per_bc.pdf"]
+    if config['modules']['stLFR']:
+        calc_frag_file = ["Calc_Frag_Length/frag_length_distribution.pdf",
+                          "Calc_Frag_Length/n_read_distribution.pdf",
+                          "Calc_Frag_Length/frag_and_bc_summary.txt",
+                          "Calc_Frag_Length/frags_per_bc.pdf"]
 
 
-    for split_dist in config['calc_frag']['split_dist']:
-        for outfile in calc_frag_file:
-            parts = outfile.split("/")
-            summary_report_files.append(parts[0] + "_" + str(split_dist) + "/" + parts[1])
+        for split_dist in config['calc_frag']['split_dist']:
+            for outfile in calc_frag_file:
+                parts = outfile.split("/")
+                summary_report_files.append(parts[0] + "_" + str(split_dist) + "/" + parts[1])
 
     if config['modules']['phasing']:
         summary_report_files.append("Make_Vcf/step4_longhap/longhap_results.txt")
-        summary_report_files.append("Make_Vcf/step3_hapcut/step4_compare_with_refphasing/hapcut_comparison_with_giab.txt") 
+        summary_report_files.append("Make_Vcf/step3_hapcut/step4_compare_with_refphasing/hapcut_eval.txt") 
 
     return summary_report_files
 
@@ -254,3 +255,4 @@ rule generate_summary_report:
     shell:
         "python {params.toolsdir}/tools/summary_report_v3.py {params.samp} {params.read_length} {params.min_frag}| "
         "tee > {output}"
+
