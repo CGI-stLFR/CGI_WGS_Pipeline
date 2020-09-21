@@ -62,7 +62,6 @@ def run_all_input(wildcards):
                               "Make_Vcf/step3_hapcut/step4_compare_with_refphasing/{}_hapcut.phased.vcf".format(config['samples']['id']),
                               "Make_Vcf/step4_longhap/{}_sentieon_pass_vars.vcf".format(config['samples']['id'])])
 
-    print(run_all_files)
     return run_all_files
 
 
