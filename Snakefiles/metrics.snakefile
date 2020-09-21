@@ -253,6 +253,6 @@ rule generate_summary_report:
     benchmark:
         "Benchmarks/metrics.generate_summary_report.txt"
     shell:
-        "python {params.toolsdir}/tools/summary_report_v3.py {params.samp} {params.read_length} {params.min_frag}| "
+        "python3 {params.toolsdir}/tools/summary_report_v4.py | "
         "tee > {output}"
 
