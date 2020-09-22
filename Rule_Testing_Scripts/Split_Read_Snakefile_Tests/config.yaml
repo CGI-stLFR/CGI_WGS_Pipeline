@@ -1,9 +1,1 @@
-samples:
-    fq_path: "../Test_Files"
-    lanes: ["1000count"]
-params:
-    read_len: 100
-    toolsdir: "/research/rv-02/home/eanderson/cgi-wgs-pipeline/data_and_tools"
-    barcode: "/barcode.list"
-    barcode_RC: "/barcode_RC.list"
-                    
+/research/rv-02/home/eanderson/CGI_WGS_Pipeline/config.yaml

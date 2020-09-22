@@ -1,6 +1,7 @@
 #!/home-02/eanderson/Virtual_Envs/SnakeMake/bin/python 
 import os, sys
 import subprocess
+import yaml
 from pathlib import Path
 
 def main():
@@ -41,7 +42,7 @@ def test_frag_len_snakefile():
             sys.exit(1)
     
 
-def setup_files():
+def setup_files(sample):
     bampath = "../Test_Files/hg001.sort.rmdup.bam"
     bamfile = Path(bampath).resolve()
     bamindex = Path(bampath + ".bai").resolve()
@@ -65,7 +66,10 @@ def remove_files():
     
 def call_frag_len_snakefile():
     try:
-        setup_files()
+        with open("../../config.yaml", 'r') as config_path:
+            config = yaml.load(config_path, yaml.SafeLoader)
+
+        setup_files(config['samples']['id'])
         try:
             subprocess.check_call(['snakemake', '-R', 'calc_frag_len'])
         except CalledProcessError:

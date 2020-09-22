@@ -1,6 +1,6 @@
 configfile: "config.yaml"
 
-CHROMS = [config['samples']['chroms']]
+CHROMS = config['samples']['chroms']
 include: "/research/rv-02/home/eanderson/CGI_WGS_Pipeline/Snakefiles/calc_frag_len.snakefile"
 
 rule run_all:

@@ -1,0 +1,20 @@
+#!/usr/bin/env python3
+import snakemake as snk
+
+config_file = "./config.yaml" # make this the default, but this should be an option
+jobs = 25 # also make this an option. default one though
+snakefile = "/research/rv-02/home/eanderson/CGI_WGS_Pipeline/Snakefiles/run.all.snakefile"
+# Other options to include
+# -F 
+# --verbose by default, disable with --silent
+# -p by default, also disabled with --silent
+# -k on by default, no option to turn off. 
+# -R to rerun stuff
+#
+# force --unclock and --rerun-incomplete to be done from the cli
+snk.snakemake(snakefile, summary=True)
+
+snk.snakemake(snakefile, cores=jobs, verbose=True, 
+              printshellcmds=True, keepgoing=True)
+
+snk.snakemake(snakefile, summary=True)

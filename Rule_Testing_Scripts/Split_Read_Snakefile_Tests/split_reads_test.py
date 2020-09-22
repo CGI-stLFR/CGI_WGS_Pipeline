@@ -2,6 +2,7 @@
 import os, sys
 import subprocess
 from pathlib import Path
+import yaml
 
 def main():
     test_splitreads_snakefile()
@@ -40,13 +41,36 @@ def test_splitreads_snakefile():
             print(f"Couldn't return to directory {cwd}", file=sys.stderr)
             sys.exit(1)
     
+
+def setup_files(config):
+    reads_path = "../Test_Files/1000count"
+    reads_dir = Path(reads_path).resolve()
+    Path(config['samples']['fq_path']).mkdir()
+    reads_link_path = Path(config['samples']['fq_path']) / config['samples']['lanes'][0]
+    reads_link = reads_link_path.resolve()
+    reads_link.symlink_to(reads_dir)
+    
+
+def clean_files(config):
+    reads_link_path = Path(config['samples']['fq_path']) / config['samples']['lanes'][0]
+    reads_link_path.unlink()
+    Path(config['samples']['fq_path']).rmdir()
+
     
 def call_splitreads_snakefile():
+    with open("../../config.yaml", 'r') as config_path:
+        config = yaml.load(config_path, yaml.SafeLoader)
+
     try:
-        subprocess.check_call(['snakemake', '-R', 'split_reads'])
-    except CalledProcessError:
-        print("Splitreads test failed during execution", file=sys.stderr)
-        sys.exit(1)
+        setup_files(config)
+
+        try:
+            subprocess.check_call(['snakemake', '-R', 'split_reads'])
+        except CalledProcessError:
+            print("Splitreads test failed during execution", file=sys.stderr)
+            sys.exit(1)
+    finally:
+        clean_files(config)
         
     file_tests = {}
     data_path = Path("data")
