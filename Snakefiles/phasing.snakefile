@@ -191,7 +191,7 @@ rule aggregate_hapcut_vcf:
                 print(f"No file for contig {contig}, skipping...", file=sys.stderr)
                 continue
             # if we find the file, open it and output results to the aggregate file
-            with open(file, "r") as vcf, open(output.agg_vcf, "a") as outfile:
+            with open(infile, "r") as vcf, open(output.agg_vcf, "a") as outfile:
                 for line in vcf:
                     if line.startswith("#"):
                         continue
