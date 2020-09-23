@@ -1,3 +1,5 @@
+# at some point we were doing like three different fragment calculations and only using one
+# I left them commented out just in case but we only ever looked at the one output by Sentieon's metrics
 
 #rule gc_depth:
 #    input:
@@ -64,6 +66,9 @@
 #        "{input} {output} 2"
 
 
+# rule for calculating metrics based on Sentieon's software
+# it outputs gc bias, map quality distribution, quality distribution
+# insert size and alignment metrics
 rule calculate_metrics:
     input:
         bam = "Align/{id}.sort.bam",
@@ -93,6 +98,7 @@ rule calculate_metrics:
             "--algo AlignmentStat {output.aln}"
 
 
+# We also plot the metrics generated above
 rule plot_metrics:
     input:
         gc_met = "Align/sentieon_gc_{id}_metric.txt",
@@ -114,6 +120,7 @@ rule plot_metrics:
             "isize={input.insert}"
 
 
+# This runs an analysis of duplicates
 rule duplicate_analysis:
     input:
         "Align/{}.sort.rmdup.bam".format(config['samples']['id'])
@@ -130,6 +137,7 @@ rule duplicate_analysis:
             "perl {params.toolsdir}/tools/Duplicate_analysis.pl - Align/Duplicate_Analysis"
 
 
+# This generates a plot of the duplicate analysis
 rule duplicate_plot:
     input:
         "Align/Duplicate_Analysis/dup_info"
@@ -143,6 +151,8 @@ rule duplicate_plot:
         "{params.toolsdir}/tools/duplicate_statistics_new.R {input} {output}"
 
 
+# flagstat generates a summary based on sam flags
+# This is used for the summary report
 rule run_flagstat:
     input:
         "Align/{}.sort.rmdup.bam".format(config['samples']['id'])
@@ -154,6 +164,8 @@ rule run_flagstat:
         "samtools flagstat {input} > {output}"
 
 
+# this looks at things like mapping rate and duplicate rate, amongst others
+# We also use it for the summary report
 rule picard_align_metrics:
     input:
         "Align/{}.sort.rmdup.bam".format(config['samples']['id'])
@@ -168,6 +180,7 @@ rule picard_align_metrics:
         "{params.toolsdir}/tools/samtools-0.1.18/samtools > {output}"
 
 
+# This looks at the coverage across the genome, as well as percent coverage at particular depths (4X, 10X, 30X) 
 rule coverage_depth:
     input:
         "Align/{}.sort.rmdup.bam".format(config['samples']['id'])
@@ -182,6 +195,7 @@ rule coverage_depth:
         "perl {params.toolsdir}/tools/depthV2.0.pl -l $({params.toolsdir}/tools/fasta_non_gapped_bases.py {params.ref}) {input} Align > {output}"
 
 
+# This is one of the plots that isn't looked at frequently but can be turned on in the config file
 rule coverage_plot_sam:
     input:
         "Calc_Frag_Length/step1_removedup_rm000/{id}.sort.removedup_rm000.sam"
@@ -196,6 +210,7 @@ rule coverage_plot_sam:
         "split -l 1000000 --additional-suffix=.sam ../../../{input} {params.id}_"
 
 
+# Wenlan had another way at looking at GC bias and this is it
 rule moar_gc_plots:
     input:
         sam = "Align/{}.sort.removedup_rm000.sam".format(config['samples']['id']),
@@ -216,11 +231,15 @@ rule moar_gc_plots:
             "-o Align/"
 
 
+# As we can have various outputs depending on the config settings
+# this function alters the inputs to the summary report to make sure
+# all the necessary files are generated
 def summary_report_input(wildcards):
     summary_report_files = ["Align/coverage_depth.txt",
                             "Align/picard_align_metrics.txt",
                             "Align/sentieon_is_{}_metric.txt".format(config['samples']['id'])]
 
+    # Add stLFR specific metrics that the summary report uses
     if config['modules']['stLFR']:
         calc_frag_file = ["Calc_Frag_Length/frag_length_distribution.pdf",
                           "Calc_Frag_Length/n_read_distribution.pdf",
@@ -232,7 +251,8 @@ def summary_report_input(wildcards):
             for outfile in calc_frag_file:
                 parts = outfile.split("/")
                 summary_report_files.append(parts[0] + "_" + str(split_dist) + "/" + parts[1])
-
+    
+    # Add phasing specific metrics that the summary report uses
     if config['modules']['phasing']:
         summary_report_files.append("Make_Vcf/step4_longhap/longhap_results.txt")
         summary_report_files.append("Make_Vcf/step3_hapcut/step4_compare_with_refphasing/hapcut_eval.txt") 
@@ -240,6 +260,10 @@ def summary_report_input(wildcards):
     return summary_report_files
 
 
+# rule to generate the summary report
+# This report has pretty much everything that goes into the online spreadsheet
+# It will search for all the potential files
+# If it can't find a file it'll just emit a message to stderr and keep going
 rule generate_summary_report:
     input:
         summary_report_input
@@ -247,9 +271,6 @@ rule generate_summary_report:
         "summary_report.txt"
     params:
         toolsdir = config['params']['toolsdir'],
-        samp = config['samples']['id'],
-        read_length = config['params']['read_len'],
-        min_frag = config['calc_frag']['min_frag']
     benchmark:
         "Benchmarks/metrics.generate_summary_report.txt"
     shell:

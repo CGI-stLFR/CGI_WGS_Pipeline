@@ -1,6 +1,11 @@
 
 CHROM_IDS = "Align/Distance_Between_Reads/" + REF.split('/').pop() + ".chrom.id"
 
+# Honestly, I don't really know too much about this stuff
+# It was made before I got here and hasn't been used since as far as I know
+# It was part of the original pipeline that I ported into snakemake, so I added it for consistency
+
+# This takes in a name and barcode sorted sam file and then it prints all paired reads
 rule remove_sam_duplicates:
     input:
         "Align/{id}.aln_mem.sam"
@@ -21,6 +26,10 @@ rule remove_sam_duplicates:
               """)
 
 
+# This creates an index similar to a .fai
+# It contains the name, numerical ID, Length of the chromosome,
+# and then the starting position of the chromosome if all nucleotides were squished together.
+# This last column is 1 based
 rule generate_chrom_ids:
     input:
         REF
@@ -34,6 +43,7 @@ rule generate_chrom_ids:
         "perl {params.toolsdir}/tools/Fa_Stat.pl {input} {output}"
 
 
+# outputs a tsv of read length, chromosome, position and barcode
 rule lfr_length_stats:
     input:
         chroms = CHROM_IDS,
@@ -53,6 +63,7 @@ rule lfr_length_stats:
             "{output}"
 
 
+# Prints distance of reads with the same chrom and barcode
 rule overlap_reads_plot:
     input:
         "Align/Distance_Between_Reads/reads_on_ref.pos"
@@ -66,6 +77,7 @@ rule overlap_reads_plot:
         "perl {params.toolsdir}/tools/overlap_reads.pl {input} {output}"
 
 
+# Creates a histogram of 1kb distance bins from the overlap/read distances
 rule overlap_hist:
     input:
         "Align/Distance_Between_Reads/overlap_reads.plot"
@@ -80,6 +92,7 @@ rule overlap_hist:
             "{input} 0 1 1000 {output}"
 
 
+# number of lines in the reads_on_ref.pos file
 rule reads_on_ref_count:
     input:
         "Align/Distance_Between_Reads/reads_on_ref.pos"
@@ -91,6 +104,7 @@ rule reads_on_ref_count:
         "wc -l {input} > {output}"
 
 
+# slightly different histogram with percentages
 rule overlap_reads_plot_2:
     input:
         count = "Align/Distance_Between_Reads/reads_on_ref.pos.num",
@@ -114,6 +128,7 @@ rule overlap_reads_plot_2:
               """)
 
 
+# Plots the histogram above, but scales the X axis to -100 to 100
 rule plot_read_overlap:
     input:
         "Align/Distance_Between_Reads/overlap_reads.plot2.R"
@@ -129,6 +144,7 @@ rule plot_read_overlap:
             "{input} 8 {output}"
 
 
+# outputs distance between mate pairs on the same chromosome
 rule mate_pair_distance:
     input:
         chroms = CHROM_IDS,
@@ -148,6 +164,7 @@ rule mate_pair_distance:
             "Align/Distance_Between_Reads/mate_pairs_distance"
 
 
+# creates a histogram of 1kb bins of the mate pair distance data
 rule mate_pair_hist:
     input:
         "Align/Distance_Between_Reads/mate_pairs_distance.plot"
@@ -162,6 +179,7 @@ rule mate_pair_hist:
             "{input} 0 1000 300000000 {output}"
 
 
+# gets number of lines in mate_pairs_distance.plot, or the number of mate pairs evaluated
 rule mate_pair_count:
     input:
         "Align/Distance_Between_Reads/mate_pairs_distance.plot"
@@ -173,6 +191,7 @@ rule mate_pair_count:
         "wc -l {input} > {output}"
 
 
+# slightly different bins with percentages
 rule mate_pair_plot_2:
     input:
         count = "Align/Distance_Between_Reads/mate_pairs_distance.num",
@@ -196,6 +215,7 @@ rule mate_pair_plot_2:
               """)
 
 
+# generates a dot plot of percentages over the full distance seen
 rule plot_mate_pairs:
     input:
         "Align/Distance_Between_Reads/mate_pairs_distance.plot2.R"

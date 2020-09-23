@@ -1,4 +1,4 @@
-
+# Run dnascope to generate a temp vcf without filtering
 rule run_dnascope:
     input:
         bam = "Align/{id}.sort.rmdup.bam",
@@ -17,20 +17,14 @@ rule run_dnascope:
         command = ["{params.sen_install}/bin/sentieon", "driver", 
                    "-r", "{input.ref}", "-t", "{threads}",
                    "-i", "{input.bam}", "--algo", "DNAscope"]
+        # if dbsnp isn't supplied, omit the -d flag
         if params.dbsnp:
             command.extend(["-d", "{params.dbsnp}"])
         command.extend(["--model", "{params.sen_model}", "{output}"])
         shell(" ".join(command))
 
-#    shell:
-#        "{params.sen_install}/bin/sentieon driver -r {input.ref}  -t {threads} "
-#            "-i {input.bam} "
-#            "--algo DNAscope "
-#            "-d {params.dbsnp} "
-#            "--model {params.sen_model} "            
-#            "{output}"
 
-
+# apply the filter on the temporary vcf
 rule run_dnamodel_apply:
     input:
         vcf = "Make_Vcf/step1_haplotyper/{id}_sentieon.tmp.vcf",
@@ -51,6 +45,8 @@ rule run_dnamodel_apply:
         "-v {input.vcf} {output}"
 
 
+# Filter to keep pass vars
+# This is necessary for LongHap since it doesn't  check the filter column
 rule keep_pass_vars:
     input:
         "Make_Vcf/step1_haplotyper/{id}_sentieon.vcf"
@@ -63,6 +59,8 @@ rule keep_pass_vars:
         awk '($1~/^#/ || $7=="PASS" || $7=="."){{print}}' {input} > {output}
         """
 
+# Filter to keep SNPs
+# This is used for evaluating against a benchmark
 rule select_snps:
     input:
         "Make_Vcf/step1_haplotyper/{id}_sentieon.vcf"
@@ -74,6 +72,8 @@ rule select_snps:
         "/opt/cgi-tools/bin/bcftools view -O z --type snps {input} > {output}"
 
 
+# Filter to keep InDels
+# This is used for evaluating against a benchmark
 rule select_indels:
     input:
         "Make_Vcf/step1_haplotyper/{id}_sentieon.vcf"
@@ -85,6 +85,7 @@ rule select_indels:
         "/opt/cgi-tools/bin/bcftools view -O z --type indels {input} > {output}"
 
 
+# index the snps
 rule index_snps:
     input:
         "Make_Vcf/step2_benchmarking/{id}.snp.vcf.gz"
@@ -96,6 +97,7 @@ rule index_snps:
         "/opt/cgi-tools/bin/tabix -p vcf -f {input}"
 
 
+# index the indels
 rule index_indels:
     input:
         "Make_Vcf/step2_benchmarking/{id}.indel.vcf.gz"
@@ -106,6 +108,8 @@ rule index_indels:
     shell:
         "/opt/cgi-tools/bin/tabix -p vcf -f {input}"
 
+
+# evaluates snps against the benchmark
 rule eval_snps:
     input:
         snp = "Make_Vcf/step2_benchmarking/{}.snp.vcf.gz".format(config['samples']['id']),
@@ -120,6 +124,8 @@ rule eval_snps:
     benchmark:
         "Benchmarks/make_vcf.eval_snps.txt"
     shell:
+        # snakemake generates expected directories, but vcfeval won't run if the directory is already generated
+        # so we have to remove it
         "rm -r {params.direc};"
         "/research/rv-02/home/qmao/Scripts/rtg-tools-3.8.4/rtg vcfeval "
             "-b {params.benchmark_snp} "
@@ -129,6 +135,7 @@ rule eval_snps:
             "-o {params.direc}"
 
 
+# evaluate indels against benchmark
 rule eval_indels:
     input:
         indel = "Make_Vcf/step2_benchmarking/{}.indel.vcf.gz".format(config['samples']['id']),
@@ -143,6 +150,8 @@ rule eval_indels:
     benchmark:
         "Benchmarks/make_vcf.eval_indels.txt"
     shell:
+        # snakemake generates expected directories, but vcfeval won't run if the directory is already generated
+        # so we have to remove it
         "rm -r {params.direc};"
         "/research/rv-02/home/qmao/Scripts/rtg-tools-3.8.4/rtg vcfeval "
             "-b {params.benchmark_indel} "

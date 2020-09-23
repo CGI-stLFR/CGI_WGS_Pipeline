@@ -1,10 +1,11 @@
+# Rule for mapping reads
 rule map_reads:
     input:
         ref = REF,
         fqs = expand("{sample}", sample=config['samples']['fastq'])
     output:
         bam = "Align/{}.sort.bam".format(config['samples']['id']), # may want this to be a temp file
-        sam = "Align/{}.aln_mem.sam".format(config['samples']['id'])
+        sam = "Align/{}.aln_mem.sam".format(config['samples']['id']) 
     threads:
         config['threads']['bwa']
     params:
@@ -15,11 +16,15 @@ rule map_reads:
     benchmark:
         "Benchmarks/main.map_reads.txt"
     shell:
+        # map with readgroup and comments appended, this creates a BX tag with the barcode
+        # Also includes sorting
         "{params.sen_install}/bin/bwa mem -M -R '{params.readgroup}' -C "
             "-t {threads} {input.ref} {input.fqs} 2>Align/aln.err | tee {output.sam} | "
         "{params.sen_install}/bin/sentieon util sort -o {output.bam} -t {threads} --sam2bam -i -"
 
 
+# Rule for the preliminary step for marking duplicates
+# It collects info in Align/{id}_score.txt
 rule locus_collector:
     input:
         "Align/{id}.sort.bam"
@@ -38,6 +43,7 @@ rule locus_collector:
             "--fun score_info {output}"
 
 
+# Perform the deduplication step and generate metrics
 rule mark_dups:
     input:
         bam = "Align/{id}.sort.bam",
@@ -59,6 +65,7 @@ rule mark_dups:
             "--metrics {output.metrics} {output.bam}"
 
 
+# This step parses the duplicate metrics and creates a more readable summary
 rule mark_dups_txt:
     input:
         "Align/{id}_dedup_metrics.txt"

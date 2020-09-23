@@ -1,3 +1,6 @@
+# the mark duplicates rule just addds the flag, the below removes duplicates
+# hapcut uses this sam file
+# We also remove barcode uninformative reads (0_0_0)
 rule remove_duplicates:
     input:
         "Align/{id}.sort.rmdup.bam"
@@ -10,6 +13,7 @@ rule remove_duplicates:
         "awk -F $'\t' '($1!~/#0_0_0$/){{print}}' > {output}"
 
 
+# this formats the chroms to be used as a flag for calc_frag_len.py
 def get_chroms(wildcards):
     if len(CHROMS) > 1:
         return ",".join(CHROMS)
@@ -18,6 +22,7 @@ def get_chroms(wildcards):
         return CHROMS
 
 
+# calculate fragment lengths
 rule calc_frag_len:
     input:
         "Align/{}.sort.rmdup.bam".format(config['samples']['id'])
