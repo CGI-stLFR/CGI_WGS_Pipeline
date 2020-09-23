@@ -4,7 +4,7 @@ samples:
     # path to directory with the below lanes fastqs
     fq_path: "../fastq" 
     # list of lanes to use. Should be directories within the fq_path directory
-    lanes: [V300049026_L01] 
+    lanes: [V300049570_L01] 
     # sample or id to use for generating targets
     id: "data" 
     # Chromosomes to evaluate for fragment length and phasing
