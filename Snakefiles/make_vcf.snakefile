@@ -14,7 +14,7 @@ rule run_dnascope:
     benchmark:
         "Benchmarks/make_vcf.run_dnascope.{id}.txt"
     run:
-        command = ["{params.sen_install}/bin/sentieon", "driver", 
+        command = ["{params.sen_install}/bin/sentieon", "driver",
                    "-r", "{input.ref}", "-t", "{threads}",
                    "-i", "{input.bam}", "--algo", "DNAscope"]
         # if dbsnp isn't supplied, omit the -d flag
@@ -46,7 +46,7 @@ rule run_dnamodel_apply:
 
 
 # Filter to keep pass vars
-# This is necessary for LongHap since it doesn't  check the filter column
+# This is necessary for LongHap and HapCut since they don't  check the filter column
 rule keep_pass_vars:
     input:
         "Make_Vcf/step1_haplotyper/{id}_sentieon.vcf"
@@ -58,6 +58,7 @@ rule keep_pass_vars:
         """
         awk '($1~/^#/ || $7=="PASS" || $7=="."){{print}}' {input} > {output}
         """
+
 
 # Filter to keep SNPs
 # This is used for evaluating against a benchmark
@@ -159,4 +160,3 @@ rule eval_indels:
             "-e {params.bedfile} "
             "-t {params.ref_sdf} "
             "-o {params.direc} "
-
