@@ -11,9 +11,7 @@ rule map_reads:
     params:
         sen_install = config['params']['sentieon_install'],
         sen_license = config['params']['sentieon_license'],
-        readgroup = r'@RG\tID:{0}\tSM:{0}\tPL:{1}'.format(config['samples']['id'],
-
-
+        readgroup = r'@RG\tID:{0}\tSM:{0}\tPL:{1}'.format(config['samples']['id'], config['params']['platform'])
     benchmark:
         "Benchmarks/main.map_reads.txt"
     shell:
