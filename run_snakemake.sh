@@ -16,7 +16,8 @@ snakemake -j 110 -k -s /research/rv-02/home/eanderson/CGI_WGS_Pipeline/Snakefile
 # Check that snakemake ran for at least an amount of time before ending
 # This prevents a barrage of e-mails during testing or troubleshooting
 if (((($(date +%s)-$start)/60) >= 20)); then
-    echo "Snakemake has either finished or failed" | \
+    echo "Snakemake has either finished or failed"
+    # echo "Snakemake has either finished or failed" | \
     # Change the email address and uncomment
     # mailx -s "Snakemake Update" -a snakemake.err.txt "eaanderson@ucdavis.edu"
 fi

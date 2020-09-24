@@ -5,14 +5,15 @@ rule map_reads:
         fqs = expand("{sample}", sample=config['samples']['fastq'])
     output:
         bam = "Align/{}.sort.bam".format(config['samples']['id']), # may want this to be a temp file
-        sam = "Align/{}.aln_mem.sam".format(config['samples']['id']) 
+        sam = "Align/{}.aln_mem.sam".format(config['samples']['id'])
     threads:
         config['threads']['bwa']
     params:
         sen_install = config['params']['sentieon_install'],
         sen_license = config['params']['sentieon_license'],
         readgroup = r'@RG\tID:{0}\tSM:{0}\tPL:{1}'.format(config['samples']['id'],
-                                                          config['params']['platform'])
+
+
     benchmark:
         "Benchmarks/main.map_reads.txt"
     shell:
@@ -77,5 +78,3 @@ rule mark_dups_txt:
         "Benchmarks/main.mark_dups_txt.{id}.txt"
     shell:
         "perl {params.toolsdir}/tools/mark_dups_txt.pl {input} {output}"
-
-
