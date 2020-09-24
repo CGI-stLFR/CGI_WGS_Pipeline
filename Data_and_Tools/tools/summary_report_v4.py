@@ -5,6 +5,9 @@ import yaml
 import re
 
 def get_split_read_log(log_path):
+    '''
+    parse split log for pertinent output
+    '''
     with open(log_path, "r") as log:
         for i in range(0,4):
             line = log.readline()
@@ -19,6 +22,9 @@ def get_split_read_log(log_path):
 
 
 def get_picard_metrics(log_path):
+    '''
+    parse picard metrics for pertinent output
+    '''
     with open(log_path, "r") as metrics:
         for line in metrics:
             if line.startswith("Mapping rate"):
@@ -30,6 +36,9 @@ def get_picard_metrics(log_path):
                 
 
 def get_coverage_depth(log_path):
+    '''
+    parse coverage depth for pertinent output
+    '''
     with open(log_path, "r") as coverage:
         for i in range(0,2):
             line = coverage.readline()
@@ -42,6 +51,9 @@ def get_coverage_depth(log_path):
 
 
 def get_insert_size(log_path):
+    '''
+    parse insert size metrics for pertinent output
+    '''
     with open(log_path, "r") as insert_size:
         for i in range(0,3):
             line = insert_size.readline()
@@ -53,6 +65,9 @@ def get_insert_size(log_path):
 
 
 def get_insert_size_gatk(log_path):
+    '''
+    parse a gatk insert size metrics file
+    '''
     with open(log_path, "r") as insert_size:
         for i in range(0,8):
             line = insert_size.readline()
@@ -64,6 +79,9 @@ def get_insert_size_gatk(log_path):
 
 
 def get_barcode_counts(path):
+    '''
+    parse fragment calculations output for pertinent output
+    '''
     with open(path, "r") as barcodes:
         frag_stats = []
         for line in barcodes:
@@ -73,6 +91,9 @@ def get_barcode_counts(path):
 
 
 def get_hapcut_results(path):
+    '''
+    parse hapcut output for results
+    '''
     with open(path, "r") as hapcut:
         hapcut_results = {}
         for line in hapcut:
@@ -85,6 +106,9 @@ def get_hapcut_results(path):
             
                 
 def get_longhap_results(path):
+    '''
+    parse longhap output for results
+    '''
     with open(path, "r") as longhap:
         for line in longhap:
             if line.startswith("N50:"):
@@ -104,6 +128,7 @@ if __name__ == "__main__":
     import yaml
     
     try:
+        # load config file to get sample id, read length, and split distances
         with open("config.yaml") as cnf_path:
             config = yaml.load(cnf_path, yaml.SafeLoader)
             sample_id = config['samples']['id']
@@ -113,6 +138,7 @@ if __name__ == "__main__":
         print("config.yaml not found", file=sys.stderr)
 
     
+    # define expected paths
     split_read_log = "split_stat_read1.log"
     picard_metrics = "Align/picard_align_metrics.txt"
     coverage_depth = "Align/coverage_depth.txt"
@@ -121,6 +147,7 @@ if __name__ == "__main__":
     
     
     try:
+        # attempt to parse slit read log and output results
         real_bc, read_pair, per_split = get_split_read_log(split_read_log)
         print("{:<32s}{:^20s}".format("Sample ID:", sample_id))
         print("{:<32s}{:^20s}".format("Barcode Count:", real_bc))
@@ -131,6 +158,8 @@ if __name__ == "__main__":
         print("Couldn't get split log stats", file=sys.stderr)
 
     try:
+        # attempt to parse picard metrics and coverage depth
+        # output results
         map_rate, dup_rate = get_picard_metrics(picard_metrics)
         dep, cov = get_coverage_depth(coverage_depth)
         print("{:<32s}{:^20s}".format("Mapping Rate:", map_rate))
@@ -141,6 +170,7 @@ if __name__ == "__main__":
         print("Couldn't get mapping and depth stats", file=sys.stderr)
 
     try:
+        # attempt to parse insert size metrics
         insert_size_metrics = "Align/sentieon_is_{}_metric.txt".format(sample_id)
         median, mean = get_insert_size(insert_size_metrics)
         print("{:<32s}{:^20s}".format("Median Insert Size:", median))
@@ -148,6 +178,7 @@ if __name__ == "__main__":
     except:
         print("Couldn't get insert size stats, trying gatk file path", file=sys.stderr)
         try:
+            # if the sentieon file doesn't work try gatk
             insert_size_metrics = "Align/gatk_metrics_data.insert_size_metrics"
             median, mean = get_insert_size_gatk(insert_size_metrics)
             print("{:<32s}{:^20s}".format("Median Insert Size:", median))
@@ -158,6 +189,8 @@ if __name__ == "__main__":
             
 
     for dist in split_dist:
+        # for all split distances
+        # attempt to parse the appropriate frag_and_bc_summary file
         fragment_count = "Calc_Frag_Length_" + str(dist) + "/frag_and_bc_summary.txt"
         try:
             fragment_stats = get_barcode_counts(fragment_count)
@@ -194,6 +227,7 @@ if __name__ == "__main__":
         print("Couldn't get fragment stats", file=sys.stderr)
 
     try:
+        # attempt to parse hapcut results
         phased_hap, an_fifty_hap, n_fifty_hap = get_hapcut_results(hapcut)
         print("{:<32s}{:^20s}".format("Hapcut AN50:", an_fifty_hap))
         print("{:<32s}{:^20s}".format("Hapcut N50:", n_fifty_hap))
@@ -202,6 +236,7 @@ if __name__ == "__main__":
         print("Couldn't get hapcut results", file=sys.stderr)
     
     try:
+        # attempt to parse longhap results
         phased_lh, an_fifty_lh, n_fifty_lh = get_longhap_results(longhap)
         print("{:<32s}{:^18s}".format("LongHap AN50:", an_fifty_lh))
         print("{:<32s}{:^18s}".format("LongHap N50:", n_fifty_lh))

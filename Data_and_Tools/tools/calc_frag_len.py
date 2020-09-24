@@ -32,6 +32,9 @@ import ray
 # Also SHOULD validate the arguments passed
 
 def main():
+    '''
+    run fragment calculations using ray
+    '''
     args = get_arguments()
     bam_path = args.bampath
     min_frag = args.minfrag
@@ -45,18 +48,28 @@ def main():
     dirname = args.outdir
     
     print(f"Calculating Fragment Lengths for Chroms {chroms}", file=sys.stderr)
+    # shut down ray, sometimes it's already initialized and causes an error
     ray.shutdown()
+    # initialize ray
     ray.init(num_cpus=n_threads, object_store_memory=200*1024*1024*1024, memory=100*1024*1024*1024)
     print(ray.available_resources(), file=sys.stderr)
+
+    # process bam file
     barcode_collection = get_reads(bam_path, split_dist, include_dups, 
                                    chroms, read_len)
+    # write out barcodes summary prior to any filtering
     reads_per_bc_bins = write_out_barcode_summary(barcode_collection, dirname, write_out_tsv)
+    # filter to keep barcodes greater than min_frag and min_reads, process
     barcode_collection = manipulate_df_gaps(barcode_collection, min_frag, min_reads)
+    # output fragment calculations
     write_out_tsv_and_summary(barcode_collection, dirname, reads_per_bc_bins, write_out_tsv)
     
     
 
 def get_arguments():
+    '''
+    Use arg parse to get arguments
+    '''
     parser = argparse.ArgumentParser()
     parser.add_argument("bampath", type=str, help="Path to bamfile for fragment length calculations.")
     parser.add_argument("-m", "--minfrag", type=int, default=750,
@@ -79,8 +92,10 @@ def get_arguments():
                         help="Specify output directory [default ./Calc_Frag_Length]")
     args = parser.parse_args()
     
+    # scrape valid chromosomes from bam
     valid_chroms = get_chroms(args.bampath)
     
+    # if chroms supplied, validate them against the bam file
     if args.chroms:
         chroms = args.chroms.split(",") # validate these real quick...
         chrom_test = all(chrom in valid_chroms for chrom in chroms)
@@ -89,6 +104,7 @@ def get_arguments():
                             Chromosomes supplied must be valid chromosomes.
                             Valid Chromosomes: {}""".format(chroms, valid_chroms))
         args.chroms = chroms
+    # else use all chroms from bam file
     else:
         args.chroms = valid_chroms
     
@@ -96,6 +112,9 @@ def get_arguments():
     
 
 def get_chroms(bam_path):
+    '''
+    scrape bam file to get valid chromosomes
+    '''
     chroms = []
     try:
         bamfile = pysam.AlignmentFile(bam_path, "rb")
@@ -110,15 +129,22 @@ def get_chroms(bam_path):
 
 def get_reads(bam_path, split_dist, include_dups, 
               chroms, read_len):
+    '''
+    create tasks for processing bam for each chromosome in parallel.
+    then aggregate results.
+    '''
     tasks_list = []
+    # create jobs for ray for each chromosome
     for chrom in chroms:
         object_id = p_processing_chroms.remote(bam_path, include_dups, split_dist, 
                                                chrom, read_len)
         tasks_list.append(object_id)
         
+    # get all results from ray
     barcode_collections = ray.get(tasks_list)
+    # insure that all chromosomes were processed
     assert len(barcode_collections) == len(chroms), f"length of done_tasks is not equal to chroms {len(done_tasks)} {len(chroms)}"
-    
+    # aggregate results into one df
     barcode_collection = pd.concat(barcode_collections, ignore_index=True)
     
     return barcode_collection
@@ -127,57 +153,81 @@ def get_reads(bam_path, split_dist, include_dups,
 @ray.remote
 def p_processing_chroms(bam_path, include_dups, split_dist, 
                         chrom, read_len):
+    '''
+    remote process to collect barcode and fragment information
+    '''
     barcode_coll = {} # Collection of barcodes to be turned into a df
     barcode_subs = {} # Collection of barcodes tracking sub-fragments
     
     def check_bc_tag(bc, chrom):
+        '''
+        check to see if barcode_chrom combination exists.
+        if it does, create new sub-fragment
+        '''
         bc_identifier = bc + "_" + chrom
+        # add barcode with subfragment 0
         if bc_identifier not in barcode_subs:
             barcode_subs[bc_identifier] = 0
 
+        # check if barcode subs last position is within split distance
         else:
             last_pos = barcode_coll[bc_identifier + "_" + str(barcode_subs[bc_identifier])][2][-1]
+            # add new sub
             if read.reference_start - last_pos >= split_dist:
                 barcode_subs[bc_identifier] += 1
 
+        # return tag for the fragment
         bc_tag = bc_identifier + "_" + str(barcode_subs[bc_identifier])
         return bc_tag
     
     
+    # create alignment file object
     bamfile = pysam.AlignmentFile(bam_path, "rb")
     print(f"Processing Chrom: {chrom}", file=sys.stderr)
     
+    # process alignment file
     for read in bamfile.fetch(chrom):
         bc = read.query_name.split("#")[1]
+        # set read flag based on arguments
         if include_dups:
             read_flag = (read.flag & 0x900 == 0)
         else:
             read_flag = (read.flag & 0xD00 == 0)
+        # check if we have a valid read
         if bc != "0_0_0" and read.mapping_quality > 30 and read_flag:
             chrom = bamfile.get_reference_name(read.reference_id)
             bc_tag = check_bc_tag(bc, chrom)
+            # create new entry for unseen bc_tag
             if bc_tag not in barcode_coll:
                 barcode_coll[bc_tag] = [bc, chrom, [read.reference_start], [read.query_name]]
+            # otherwise add start and read name
             else:
                 barcode_coll[bc_tag][2].append(read.reference_start)
                 barcode_coll[bc_tag][3].append(read.query_name)
+    # perform preliminary manipulation of df
     barcode_df = manipulate_df_prelim(barcode_coll, read_len)
     return barcode_df
 
 
 def manipulate_df_gaps(test_barcodes, min_frag, min_reads):
-    
+    '''
+    get distance between reads, filter dataframe and add new columns
+    '''
     def get_read_gap(read_positions):
+        '''
+        get distances between starting positions
+        '''
         gap_vals = []
         for i in range(1, len(read_positions)):
             gap_vals.append(read_positions[i] - read_positions[i-1])
 
         return gap_vals
 
-
+    # filter by minimum reads and fragment length
     test_barcodes = test_barcodes[test_barcodes['N_Reads'] >= min_reads]
     test_barcodes = test_barcodes[test_barcodes['Frag_Length'] >= min_frag]
     test_barcodes['Frag_Gaps'] = test_barcodes['Positions'].apply(get_read_gap)
+    # create columns for min, max and mean distance between reads
     test_barcodes['Min_Frag_Gap'] = test_barcodes['Frag_Gaps'].apply(min)
     test_barcodes['Max_Frag_Gap'] = test_barcodes['Frag_Gaps'].apply(max)
     test_barcodes['Mean_Frag_Gap'] = test_barcodes['Frag_Gaps'].apply(mean)
@@ -185,16 +235,26 @@ def manipulate_df_gaps(test_barcodes, min_frag, min_reads):
 
 
 def manipulate_df_prelim(barcode_collection, read_len):
+    '''
+    perform preliminary dataframe manipulations on barcode fragment data
+    '''
+    # create df from barcode_collection dict
     test_barcodes = pd.DataFrame.from_dict(barcode_collection, orient="index", columns=['Barcode', 'Chrom', 'Positions', 'ReadID'])
+    # only keep unique positions
     test_barcodes['Positions'] = test_barcodes['Positions'].apply(set).apply(list).apply(sorted)
+    # get number of reads, min and max positions
     test_barcodes['N_Reads'] = test_barcodes['Positions'].apply(len)
     test_barcodes['Min_Pos'] = test_barcodes['Positions'].apply(min)
     test_barcodes['Max_Pos'] = test_barcodes['Positions'].apply(max)
+    # get total length of fragment
     test_barcodes['Frag_Length'] = test_barcodes['Max_Pos'] - test_barcodes['Min_Pos'] + read_len
     return test_barcodes
 
     
 def write_out_tsv_and_summary(test_barcodes, dirname, reads_per_bc_bins, write_out_tsv):
+    '''
+    create frag_and_bc_summary.txt file
+    '''
     print(f"Writing out summary files to {dirname}", file=sys.stderr)
     barcode_count  = test_barcodes['Barcode'].nunique()
     fragment_count = test_barcodes.shape[0]
@@ -252,8 +312,10 @@ def write_out_tsv_and_summary(test_barcodes, dirname, reads_per_bc_bins, write_o
               f"Barcodes Mapped:\t{bcs_total}",
               file = frag_stats)
     
+    # write out full dataframe as tsv
     if write_out_tsv:
         test_barcodes.to_csv(dirname + "/frag_and_bc_dataframe.tsv", sep='\t', index=False)
+    # create plots of frag length distribution and n reads
     frag_plot = sns.distplot(test_barcodes['Frag_Length'])
     plt.savefig(dirname + "/frag_length_distribution.pdf")
     plt.clf()
@@ -263,6 +325,10 @@ def write_out_tsv_and_summary(test_barcodes, dirname, reads_per_bc_bins, write_o
     
     
 def write_out_barcode_summary(test_barcodes, dirname, write_out_tsv):
+    '''
+    get reads per bc bins and write out full tsv of fragment data.
+    the full tsv is unfiltered whatsoever.
+    '''
     try:
         # Create target Directory
         os.mkdir(dirname)
@@ -272,6 +338,8 @@ def write_out_barcode_summary(test_barcodes, dirname, write_out_tsv):
 
     print(f"Writing out summary files to {dirname}", file=sys.stderr)
     reads_per_bc_bins=[]
+    # group dataframe by N_reads, count and sum groups, rename columns
+    # then subset into bins
     barcode_summary = (test_barcodes.groupby('Barcode')['N_Reads']
                            .agg(['sum', 'count'])
                            .reset_index()
@@ -296,7 +364,8 @@ def write_out_barcode_summary(test_barcodes, dirname, write_out_tsv):
     reads_per_bc_bins.append(len(barcode_summary[(barcode_summary['Reads'] >= 50) & (barcode_summary['Reads'] < 100)].index))
     reads_per_bc_bins.append(len(barcode_summary[barcode_summary['Reads'] >= 100].index))
     reads_per_bc_bins.append(len(barcode_summary.index))
-
+    
+    # output frags_per_bc.pdf
     frag_per_bc = sns.distplot(barcode_summary['Frags'], kde=False, rug=True)
     plt.savefig(dirname + "/frags_per_bc.pdf")
     plt.clf()
