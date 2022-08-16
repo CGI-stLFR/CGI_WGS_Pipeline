@@ -189,9 +189,9 @@ def p_processing_chroms(bam_path, include_dups, split_dist,
     for read in bamfile.fetch(chrom):
         bc = read.query_name.split("#")[1]
         # set read flag based on arguments
-        if include_dups:
+        if include_dups: # 2048(chimeric align) + 256(secondary align)
             read_flag = (read.flag & 0x900 == 0)
-        else:
+        else: # + 1024 (pcr dup)
             read_flag = (read.flag & 0xD00 == 0)
         # check if we have a valid read
         if bc != "0_0_0" and read.mapping_quality > 30 and read_flag:
