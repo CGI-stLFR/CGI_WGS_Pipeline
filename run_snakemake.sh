@@ -10,7 +10,7 @@ start=$(date +%s)
 # -k specifies that snakemake should continue to execute rules that are independant of any failures
 # This saves time overall
 # -s specifies the snakefile with the final targets
-snakemake -j 110 -k -s /research/rv-02/home/eanderson/CGI_WGS_Pipeline/Snakefiles/run.all.snakefile 2> snakemake.err.txt
+snakemake -j 40 -k -s /research/rv-02/home/eanderson/CGI_WGS_Pipeline/Snakefiles/run.all.snakefile 2> snakemake.err.txt
 
 
 # Check that snakemake ran for at least an amount of time before ending

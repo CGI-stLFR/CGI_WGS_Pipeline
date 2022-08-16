@@ -223,6 +223,7 @@ if __name__ == "__main__":
         print("{:<32s}{:^20s}".format(f"Total BC (25, 50]:", fragment_stats[22]))
         print("{:<32s}{:^20s}".format(f"Total BC (50, 100]:", fragment_stats[23]))
         print("{:<32s}{:^20s}".format(f"Total BC (100+):", fragment_stats[24]))
+        print("{:<32s}{:^20s}".format(f"Total Barcodes Mapped:", fragment_stats[25]))
     except:
         print("Couldn't get fragment stats", file=sys.stderr)
 
