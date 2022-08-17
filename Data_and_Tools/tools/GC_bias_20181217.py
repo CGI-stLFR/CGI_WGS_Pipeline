@@ -44,16 +44,21 @@ class GC_Bias(object):
             if not line:
                 return ''
         info = line.split()
-        unmapped = int(info[1]) & 4 and self.only_mapped
+        flag = int(info[1])
+        unmapped = flag & 4 and self.only_mapped
         while unmapped:
             line = self.rf.readline().strip('\r\n')
             if not line:
                 return ''
             info = line.split()
-            unmapped = int(info[1]) & 4 and self.only_mapped
+            unmapped = flag & 4 and self.only_mapped
         read = info[9].upper()
-        if info[0][-2] == '/':
-            self.pe_tag = info[0][-1]
+        # if info[0][-2] == '/':
+        #     self.pe_tag = info[0][-1]
+        if flag & 64:
+            self.pe_tag = '1'
+        elif flag & 128:
+            self.pe_tag = '2'
         return read
 
     def load_data_file(self, data_fp):
