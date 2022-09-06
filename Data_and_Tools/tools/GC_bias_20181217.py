@@ -249,7 +249,7 @@ class GC_Bias(object):
                 plt.xlabel('GC Count (bp)')
                 plt.ylabel('Frequency (%)')
                 plt.legend()
-                png_path = '%sGC_Distribution.png' % read_tag
+                png_path = self.outdir + '%sGC_Distribution.png' % read_tag
                 fig.savefig(png_path)
                 
                 fig, ax = plt.subplots()
