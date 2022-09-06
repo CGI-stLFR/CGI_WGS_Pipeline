@@ -50,7 +50,7 @@ def main():
     print(f"Calculating Fragment Lengths for Chroms {chroms}", file=sys.stderr)
     # shut down ray, sometimes it's already initialized and causes an error
     ray.shutdown()
-    # initialize ray
+    # initialize ray, 500M=memory=500 * 1024 * 1024, 2.5G=memory=2500 * 1024 * 1024
     ray.init(num_cpus=n_threads, object_store_memory=200*1024*1024*1024, memory=100*1024*1024*1024)
     print(ray.available_resources(), file=sys.stderr)
 
