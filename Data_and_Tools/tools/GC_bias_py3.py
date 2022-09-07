@@ -8,7 +8,6 @@ prog_date = '2022-08'
 usage = '''
 
      Version %s by Christian Villarosa  %s
-
      Usage: %s read_file1 [read_file2] [-r Reference.fa] [-o output/dir/path]
 
 ''' % (prog_version, prog_date, os.path.basename(sys.argv[0]))
@@ -23,12 +22,12 @@ def float_check(float_string):
 class GC_Bias(object):
     only_mapped = True
 
-    def __init__(self, data_files, reference, outdir):
+    def __init__(self, data_files, reference, outdir, r1_len, r2_len):
         self.data_files = data_files
         self.reference = reference
         self.outdir = outdir
         print(self.data_files, self.reference, self.outdir)
-        self.read_lengths = []
+        self.read_lengths = [r1_len, r2_len]
         return
 
     def get_fastq_read(self):
@@ -74,7 +73,8 @@ class GC_Bias(object):
             while line.startswith('@'):
                 line = self.rf.readline().strip('\r\n')
             self.queued_read = self.get_sam_read(line)
-        self.read_lengths.append(len(self.queued_read))
+        # self.read_lengths.append(len(self.queued_read))
+        print("read_lengths: {}".format(self.read_lengths))
         return
 
     def get_next_read(self):
@@ -282,7 +282,10 @@ def main():
     ArgParser.add_argument("-o", "--out", action="store", dest="out",
                            default="", 
                            help="desired directory for output files. [cwd]")
+    ArgParser.add_argument("-r1", "--r1_len", action="store", dest="r1_len", default=40, help="read1 length", type=int)
+    ArgParser.add_argument("-r2", "--r2_len", action="store", dest="r2_len", default=100, help="read2 length", type=int)
     (para, args) = ArgParser.parse_known_args()
+
 
     if not args:
         ArgParser.print_help()
@@ -292,8 +295,10 @@ def main():
         data_files = args
         reference = para.reference
         outdir = para.out
+        r1_len = para.r1_len
+        r2_len = para.r2_len
 
-    gcb = GC_Bias(data_files, reference, outdir)
+    gcb = GC_Bias(data_files, reference, outdir, r1_len, r2_len)
     gcb.run()
 
 

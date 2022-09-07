@@ -8,7 +8,6 @@ prog_date = '2018-12-12'
 usage = '''
 
      Version %s by Christian Villarosa  %s
-
      Usage: %s read_file1 [read_file2] [-r Reference.fa] [-o output/dir/path]
 
 ''' % (prog_version, prog_date, os.path.basename(sys.argv[0]))
@@ -75,6 +74,7 @@ class GC_Bias(object):
                 line = self.rf.readline().strip('\r\n')
             self.queued_read = self.get_sam_read(line)
         self.read_lengths.append(len(self.queued_read))
+        print self.read_lengths
         return
 
     def get_next_read(self):
