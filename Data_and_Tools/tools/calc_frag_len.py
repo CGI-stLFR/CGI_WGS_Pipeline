@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """calc_frag_len.py
-
+add ray mem
 Usage:
   calc_frag_len.py [--threads <int>] [--splitdist <int>] 
                    [--minfrag <int>] [--minreads <int>] 
