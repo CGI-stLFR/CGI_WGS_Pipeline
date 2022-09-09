@@ -206,7 +206,7 @@ Rline
 	print ROUT $Rline;
 	close(ROUT);
 
-	system("/research/rv-02/home/eanderson/cgi-wgs-pipeline/data_and_tools/tools/R-3.2.1/bin/R CMD BATCH  $figFile.R");
+	system("R CMD BATCH  $figFile.R");
 }
 
 
@@ -253,6 +253,6 @@ Rline
 	print ROUT $Rline;
 	close(ROUT);
 
-	system("/research/rv-02/home/eanderson/cgi-wgs-pipeline/data_and_tools/tools/R-3.2.1/bin/R CMD BATCH  $figFile.R");
+	system("R CMD BATCH  $figFile.R");
 #	system("rm  $figFile.R  $figFile.Rout");
 }
