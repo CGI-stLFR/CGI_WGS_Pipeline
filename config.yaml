@@ -35,6 +35,7 @@ params:
     platform: "BGI-seq"
     # Read length without barcode
     read_len: 100
+    read1_len: 100
     # directory with tools to be used, probably won't need to be changed
     toolsdir: "/research/rv-02/home/eanderson/CGI_WGS_Pipeline/Data_and_Tools"
     # barcodes file

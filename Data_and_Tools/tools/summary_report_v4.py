@@ -133,6 +133,11 @@ if __name__ == "__main__":
             config = yaml.load(cnf_path, yaml.SafeLoader)
             sample_id = config['samples']['id']
             read_len = config['params']['read_len']
+            try:
+                # if r1,r2 with different length
+                read1_len = config['params']['read1_len']
+            except:
+                read1_len = read_len
             split_dist = config['calc_frag']['split_dist']
     except:
         print("config.yaml not found", file=sys.stderr)
@@ -152,7 +157,7 @@ if __name__ == "__main__":
         print("{:<32s}{:^20s}".format("Sample ID:", sample_id))
         print("{:<32s}{:^20s}".format("Barcode Count:", real_bc))
         print("{:<32s}{:^20s}".format("Read Pairs:", read_pair))
-        print("{:<32s}{:^20d}".format("Total Bases:", int(read_pair)*read_len*2))
+        print("{:<32s}{:^20d}".format("Total Bases:", int(read_pair)*(read_len+read1_len)))
         print("{:<32s}{:^20s}".format("Barcode Split Rate:", per_split))
     except:
         print("Couldn't get split log stats", file=sys.stderr)
