@@ -37,7 +37,8 @@ rule calc_frag_len:
         chroms = get_chroms,
         toolsdir = config['params']['toolsdir'],
         include_dups = config['calc_frag']['include_dups'],
-        umi_analysis = config['modules']['umi_analysis']
+        umi_analysis = config['modules']['umi_analysis'],
+        writeouttsvs = config['calc_frag']['writeouttsvs']
     threads: 
         config['threads']['calc_frag']
     benchmark:
@@ -50,11 +51,12 @@ rule calc_frag_len:
                    "--readlen {params.read_len}",
                    "--threads {threads}",
                    "--chroms {params.chroms}",
-                   "--writeouttsvs False",
                    "--outdir Calc_Frag_Length_{wildcards.split}"]
 
         if params.include_dups:
             command.append("--includedups")
+        if params.writeouttsvs:
+            command.append("--writeouttsvs")
 
         command.append("{input}")
     
