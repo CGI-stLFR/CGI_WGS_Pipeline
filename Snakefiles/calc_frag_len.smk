@@ -50,7 +50,7 @@ rule calc_frag_len:
                    "--readlen {params.read_len}",
                    "--threads {threads}",
                    "--chroms {params.chroms}",
-                   "--writeouttsvs ",
+                   "--writeouttsvs False",
                    "--outdir Calc_Frag_Length_{wildcards.split}"]
 
         if params.include_dups:

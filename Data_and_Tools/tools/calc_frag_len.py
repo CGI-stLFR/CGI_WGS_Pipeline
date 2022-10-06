@@ -85,7 +85,7 @@ def get_arguments():
     parser.add_argument("--chroms", type=str,
                         help="Comma seperated list of chromosomes to use [default: all]")
     parser.add_argument("--includedups", action="store_true",
-                        help="Include reads marked as duplicates.")
+                        help="Include reads marked as duplicates, default false.")
     parser.add_argument("--writeouttsvs", action="store_true",
                         help="Write out large, detailed TSVs of various data manipulations.")
     parser.add_argument("--outdir", type=str, default="Calc_Frag_Length",

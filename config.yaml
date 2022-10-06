@@ -68,7 +68,7 @@ calc_frag:
     # minimum fragment length for fragment calculations
     min_frag: 750
     # include duplicates, in fragment calculations. If two reads share the same barcode and mapping position they're treated as duplicates anyway.
-    include_dups: True
+    include_dups: False
 longhap:
     # Longhap parameters, window size determines bin size for calculations
     win_size: 10000000
