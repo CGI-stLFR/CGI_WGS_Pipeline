@@ -5,6 +5,9 @@ The config file has various modules with booleans that can be turned on or off.
 Scripts, tools and binaries are under Data\_and\_Tools/tools, 
 whereas Data\_and\_Tools/data (not on github) contains various databases and large datafiles.
 
+## Workflow
+![Workflow](images/stlft.pipeline.dag.svg)
+
 ## Directory Structure
 
 The pipeline is organized as follows:
