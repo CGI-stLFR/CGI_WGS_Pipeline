@@ -14,7 +14,7 @@ use FindBin qw($Bin);
 		-hg	hg19 or hg18 or other default:hg19
 		-h	help
 
-hg19:2897310462 hg18:2885270602 mm9:2725765481 mm10:2730871774
+hg19:2897310462 hg18:2885270602 mm9:2725765481 mm10:2730871774 GCA_000001405.15_GRCh38_no_alt_analysis_set.fa:2934876545
 =cut
 		
 

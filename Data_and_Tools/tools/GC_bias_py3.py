@@ -27,7 +27,10 @@ class GC_Bias(object):
         self.reference = reference
         self.outdir = outdir
         print(self.data_files, self.reference, self.outdir)
-        self.read_lengths = [r1_len, r2_len]
+        if r1_len==0:
+            self.read_lengths = [r2_len]
+        else:
+            self.read_lengths = [r1_len, r2_len]
         return
 
     def get_fastq_read(self):
@@ -240,7 +243,6 @@ class GC_Bias(object):
 
             if rix == 3:
                 read_tag = 'PE_'
-                
                 fig, ax = plt.subplots()
                 plt.plot(list(range(read_length + 1)), self.read_percs_list[0], label='Read1', color='r')
                 plt.plot(list(range(read_length + 1)), ref_percs, label='Reference', color='b')

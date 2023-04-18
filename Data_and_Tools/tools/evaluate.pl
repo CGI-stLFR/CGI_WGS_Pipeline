@@ -234,3 +234,4 @@ print "long switch error mixing snp and indel:\t",$long_comb/$total, "\n";
 foreach my $set(keys %hash){
 #	warn $set, "\n";
 }
+0	0	0	0	0	0	0	0	0

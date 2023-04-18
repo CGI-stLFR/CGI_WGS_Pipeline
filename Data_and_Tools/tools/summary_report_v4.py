@@ -219,6 +219,7 @@ if __name__ == "__main__":
         print("{:<32s}{:^20s}".format(f"Reads/BC (25, 50]:", fragment_stats[13]))
         print("{:<32s}{:^20s}".format(f"Reads/BC (50, 100]:", fragment_stats[14]))
         print("{:<32s}{:^20s}".format(f"Reads/BC (100+):", fragment_stats[15]))
+        print("{:<32s}{:^20s}".format(f"Total Reads Mapped:", fragment_stats[26]))
         print("{:<32s}{:^20s}".format(f"Total BC (1):", fragment_stats[16]))
         print("{:<32s}{:^20s}".format(f"Total BC (2):", fragment_stats[17]))
         print("{:<32s}{:^20s}".format(f"Total BC (3):", fragment_stats[18]))

@@ -189,7 +189,7 @@ def p_processing_chroms(bam_path, include_dups, split_dist,
     for read in bamfile.fetch(chrom):
         bc = read.query_name.split("#")[1]
         # set read flag based on arguments
-        if include_dups: # 2048(chimeric align) + 256(secondary align)
+        if include_dups: # 2048(chimeric align) + 256(secondary align)=2304=int('0x900',16), ==0 means not have such tag
             read_flag = (read.flag & 0x900 == 0)
         else: # + 1024 (pcr dup)
             read_flag = (read.flag & 0xD00 == 0)
