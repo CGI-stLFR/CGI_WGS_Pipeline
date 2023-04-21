@@ -93,7 +93,7 @@ while(<IN2>){ # read lines from Read2
       $Read_num[$index_hash{$hash}] ++; # add a another read for the barcode
       
       $T = <IN1>; chomp($T); # remove new line
-      print OUT1 "$id\#$hash\#\/1\tBX:Z:$hash\n";
+      print OUT1 "$id\#$hash\tBX:Z:$hash\n";
       $T = <IN1>; chomp($T);
       print OUT1 "$T\n"; # JUST PRINT
       $T = <IN1>; chomp($T);
@@ -101,7 +101,7 @@ while(<IN2>){ # read lines from Read2
       $T = <IN1>; chomp($T);
       print OUT1 "$T\n"; # JUST PRINT
 
-      print OUT2 "$id\#$hash\#\/2\tBX:Z:$hash\n";
+      print OUT2 "$id\#$hash\tBX:Z:$hash\n";
       print OUT2 "$read\n";
       $T = <IN2>; $n++;chomp($T);
       print OUT2 "$T\n";
@@ -112,7 +112,7 @@ while(<IN2>){ # read lines from Read2
     else{
       $Read_num[0] ++;
       $T = <IN1>; chomp($T);
-      print OUT1 "$id\#0_0_0\#\/1\tBX:Z:0_0_0\n";
+      print OUT1 "$id\#0_0_0\tBX:Z:0_0_0\n";
       $T = <IN1>; chomp($T);
       print OUT1 "$T\n";
       $T = <IN1>; chomp($T);
@@ -120,7 +120,7 @@ while(<IN2>){ # read lines from Read2
       $T = <IN1>; chomp($T);
       print OUT1 "$T\n";
 
-      print OUT2 "$id\#0_0_0\#\/2\tBX:Z:0_0_0\n";
+      print OUT2 "$id\#0_0_0\tBX:Z:0_0_0\n";
       print OUT2 "$read\n";
       $T = <IN2>; $n++;chomp($T);
       print OUT2 "$T\n";
